@@ -1,4 +1,4 @@
-from django.db import migrations
+from django.db import migrations, models
 
 
 def rename_fee_types(apps, schema_editor):
@@ -36,5 +36,10 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.AlterField(
+            model_name="feetype",
+            name="name",
+            field=models.CharField(max_length=50, unique=True),
+        ),
         migrations.RunPython(rename_fee_types, revert_fee_types),
     ]
