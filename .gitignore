@@ -1,9 +1,36 @@
+# Secrets and local env files
 .env
-.env.production
+.env.*
+!.env.example
+!.env.production.example
+
+# Python cache and build artifacts
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
+*.egg-info/
+.pytest_cache/
+
+# Virtual environments
+.venv/
+venv/
+
+# Local database and generated assets
 db.sqlite3
+db.sqlite3-journal
 staticfiles/
+media/
+emails/
+tmp_video_frames/
+backups/
+
+# Logs
 *.log
+logs/
+
+# OS/editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
