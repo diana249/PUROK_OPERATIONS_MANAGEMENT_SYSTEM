@@ -7,6 +7,8 @@ services:
     startCommand: "gunicorn purok_system.wsgi:application"
     healthCheckPath: "/healthz/"
     envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.8"
       - key: DJANGO_ENV
         value: "production"
       - key: DEBUG
