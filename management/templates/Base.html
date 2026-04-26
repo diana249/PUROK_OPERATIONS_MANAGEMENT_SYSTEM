@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Purok Management System</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light p-2">
+        <a class="navbar-brand" href="{% url 'dashboard' %}">Purok Dashboard</a>
+        <div class="collapse navbar-collapse">
+            <ul class="navbar-nav me-auto">
+                <li class="nav-item"><a class="nav-link" href="{% url 'resident-list' %}">Residents</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'attendance-list' %}">Attendance</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'fee-list' %}">Fees</a></li>
+                <li class="nav-item"><a class="nav-link" href="{% url 'clearance-list' %}">Clearances</a></li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container mt-4">
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>

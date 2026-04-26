@@ -1,0 +1,16 @@
+Hello {{ resident_name }},
+
+Your payment transaction has been reviewed.
+
+Fee type: {{ fee_type }}
+Amount sent: {{ amount }}
+GCash reference: {{ gcash_reference }}
+Status: {{ status|title }}
+Reviewed at: {{ reviewed_at|date:"Y-m-d H:i" }}
+Admin notes: {{ admin_notes|default:"-" }}
+
+{% if status == "approved" %}
+Your fee is now marked as paid.
+{% else %}
+Please review your details and submit again if needed.
+{% endif %}

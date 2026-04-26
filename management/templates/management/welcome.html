@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome | Purok Operations Management System</title>
+    <style>
+        :root {
+            --bg-top: #edf4f6;
+            --bg-mid: #eef3f8;
+            --bg-bottom: #f3f1ee;
+            --ink: #0f2731;
+            --muted: #48616d;
+            --line: #d2e0e7;
+            --panel: #ffffff;
+            --brand: #116f74;
+            --brand-strong: #0b545b;
+            --accent: #c18b4b;
+            --shadow-soft: 0 16px 36px rgba(22, 50, 62, 0.10);
+            --shadow-frame: 0 24px 52px rgba(10, 35, 41, 0.20);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: "Segoe UI", "Trebuchet MS", sans-serif;
+            color: var(--ink);
+            background:
+                radial-gradient(circle at 14% 8%, rgba(17, 111, 116, 0.12), transparent 34%),
+                radial-gradient(circle at 84% 12%, rgba(193, 139, 75, 0.10), transparent 30%),
+                linear-gradient(160deg, var(--bg-top) 0%, var(--bg-mid) 50%, var(--bg-bottom) 100%);
+            min-height: 100vh;
+        }
+
+        .shell {
+            width: min(1120px, 92vw);
+            margin: 0 auto;
+            padding: 24px 0 48px;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+
+        .dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--brand), var(--accent));
+            box-shadow: 0 0 0 7px rgba(15, 125, 119, 0.12);
+        }
+
+        .top-actions {
+            display: inline-flex;
+            gap: 8px;
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            font-weight: 700;
+            border-radius: 11px;
+            padding: 10px 14px;
+            border: 1px solid transparent;
+            transition: transform 120ms ease, box-shadow 120ms ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn-primary {
+            color: #fff;
+            background: linear-gradient(135deg, var(--brand), var(--brand-strong));
+            box-shadow: 0 10px 20px rgba(9, 90, 86, 0.24);
+        }
+
+        .btn-secondary {
+            color: var(--ink);
+            background: rgba(255, 255, 255, 0.8);
+            border-color: #cfe0e6;
+        }
+
+        .mobile-flow {
+            display: grid;
+            gap: 18px;
+        }
+
+        .panel {
+            background: rgba(255, 255, 255, 0.92);
+            border: 1px solid var(--line);
+            border-radius: 20px;
+            box-shadow: var(--shadow-soft);
+            padding: 24px;
+        }
+
+        .hero-title {
+            margin: 0 0 12px;
+            line-height: 1.15;
+            font-size: clamp(1.7rem, 4.8vw, 2.7rem);
+            max-width: 14ch;
+            letter-spacing: -0.015em;
+        }
+
+        .hero-subtitle {
+            margin: 0;
+            color: var(--muted);
+            line-height: 1.6;
+            max-width: 52ch;
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            font-size: 0.8rem;
+            color: #0f5c66;
+            background: #e8f2f3;
+            border: 1px solid #c8dde0;
+            padding: 6px 10px;
+            border-radius: 999px;
+            margin-bottom: 14px;
+        }
+
+        .phone-stage {
+            background: linear-gradient(170deg, #eef5f8 0%, #e5eff5 100%);
+            border: 1px solid #cfdfe7;
+            border-radius: 26px;
+            padding: 18px;
+        }
+
+        .phone {
+            border-radius: 28px;
+            border: 7px solid #102329;
+            background: #fdfefe;
+            overflow: hidden;
+            box-shadow: var(--shadow-frame);
+            max-width: 390px;
+            margin: 0 auto;
+        }
+
+        .phone-notch {
+            height: 24px;
+            background: linear-gradient(180deg, #1a2f36, #14272d);
+        }
+
+        .phone-scroll {
+            max-height: 420px;
+            overflow-y: auto;
+            padding: 14px 14px 8px;
+            scroll-snap-type: y mandatory;
+            scrollbar-width: thin;
+            scrollbar-color: #9ab1bc #e8f0f4;
+        }
+
+        .phone-scroll::-webkit-scrollbar {
+            width: 7px;
+        }
+
+        .phone-scroll::-webkit-scrollbar-track {
+            background: #eaf2f5;
+        }
+
+        .phone-scroll::-webkit-scrollbar-thumb {
+            background: #a8bec8;
+            border-radius: 20px;
+        }
+
+        .tile {
+            scroll-snap-align: start;
+            border: 1px solid #d3e2e9;
+            border-radius: 14px;
+            padding: 15px;
+            background: #ffffff;
+            margin-bottom: 12px;
+        }
+
+        .tile h3 {
+            margin: 0;
+            font-size: 1rem;
+        }
+
+        .tile p {
+            margin: 6px 0 0;
+            color: var(--muted);
+            line-height: 1.45;
+            font-size: 0.93rem;
+        }
+
+        .laptop-stage {
+            background: #fff;
+            border: 1px solid #d2e0e7;
+            border-radius: 18px;
+            padding: 18px;
+            margin-top: 20px;
+        }
+
+        .window {
+            border: 1px solid #cfdee6;
+            border-radius: 14px;
+            overflow: hidden;
+            background: #f8fbfd;
+        }
+
+        .window-top {
+            padding: 10px 12px;
+            border-bottom: 1px solid #dbe8ec;
+            background: #f2f8fb;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .window-dot {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: #ccdce2;
+        }
+
+        .window-body {
+            display: grid;
+            gap: 12px;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            padding: 14px;
+        }
+
+        .window-card {
+            background: #fff;
+            border: 1px solid #d1e0e8;
+            border-radius: 12px;
+            padding: 14px;
+        }
+
+        .window-card strong {
+            display: block;
+            font-size: 0.92rem;
+            margin-bottom: 4px;
+        }
+
+        .window-card span {
+            font-size: 0.86rem;
+            color: var(--muted);
+            line-height: 1.42;
+        }
+
+        .notes {
+            margin-top: 10px;
+            color: var(--muted);
+            font-size: 0.92rem;
+            line-height: 1.5;
+        }
+
+        .cta-row {
+            margin-top: 20px;
+        }
+
+        @media (min-width: 960px) {
+            .mobile-flow {
+                grid-template-columns: minmax(0, 1fr) minmax(360px, 440px);
+                align-items: start;
+            }
+
+            .panel-main {
+                min-height: 700px;
+                display: flex;
+                flex-direction: column;
+                justify-content: space-between;
+            }
+
+            .phone {
+                max-width: 420px;
+            }
+
+            .phone-scroll {
+                max-height: 560px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <main class="shell">
+        <header class="topbar">
+            <div class="brand">
+                <span class="dot" aria-hidden="true"></span>
+                <span>Purok Management</span>
+            </div>
+        </header>
+
+        <section class="mobile-flow">
+            <article class="panel panel-main">
+                <div>
+                    <span class="pill">Community Records and Services</span>
+                    <h1 class="hero-title">Manage purok operations in one reliable system.</h1>
+                    <p class="hero-subtitle">
+                        Keep resident data organized, monitor attendance updates, review fee progress, and release clearances from one secure workflow.
+                    </p>
+                    <div class="cta-row">
+                        <a class="btn btn-primary" href="{% url 'login' %}">Get Started</a>
+                    </div>
+                </div>
+
+                <div class="laptop-stage">
+                    <div class="window">
+                        <div class="window-top">
+                            <span class="window-dot"></span>
+                            <span class="window-dot"></span>
+                            <span class="window-dot"></span>
+                        </div>
+                        <div class="window-body">
+                            <div class="window-card">
+                                <strong>Resident Profiles</strong>
+                                <span>Store and review complete household records with status tracking.</span>
+                            </div>
+                            <div class="window-card">
+                                <strong>Attendance Log</strong>
+                                <span>Capture meeting participation and spot pending follow-ups quickly.</span>
+                            </div>
+                            <div class="window-card">
+                                <strong>Fee Monitoring</strong>
+                                <span>Track unpaid balances and confirm submitted payments.</span>
+                            </div>
+                            <div class="window-card">
+                                <strong>Clearance Processing</strong>
+                                <span>Process requests and issue downloadable clearances faster.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <aside class="phone-stage">
+                <div class="phone">
+                    <div class="phone-notch"></div>
+                    <div class="phone-scroll">
+                        <article class="tile">
+                            <h3>Resident Registry</h3>
+                            <p>Unified profiles for household details, role, and account links.</p>
+                        </article>
+                        <article class="tile">
+                            <h3>Meeting Attendance</h3>
+                            <p>Quick attendance posting with easy checks for late or absent records.</p>
+                        </article>
+                        <article class="tile">
+                            <h3>Fees and Payments</h3>
+                            <p>Follow billing progress and payment submissions in a single stream.</p>
+                        </article>
+                        <article class="tile">
+                            <h3>Clearance Requests</h3>
+                            <p>Handle document requests and keep release status updated.</p>
+                        </article>
+                        <article class="tile">
+                            <h3>Activity Monitoring</h3>
+                            <p>Review key account actions and security-related events.</p>
+                        </article>
+                        <article class="tile">
+                            <h3>Notification Center</h3>
+                            <p>View pending tasks and important reminders for daily operations.</p>
+                        </article>
+                    </div>
+                </div>
+            </aside>
+        </section>
+    </main>
+</body>
+</html>

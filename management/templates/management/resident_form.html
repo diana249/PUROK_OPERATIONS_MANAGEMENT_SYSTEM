@@ -1,0 +1,21 @@
+{% extends 'management/base.html' %}
+
+{% block content %}
+<section class="panel">
+    <div class="section-head">
+        <div>
+            <h2>{{ title }}</h2>
+            <p>Enter complete resident details before saving.</p>
+        </div>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <div class="form-actions">
+            <button type="submit" class="btn btn-success">Save</button>
+            <a href="{% url 'resident-list' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</section>
+{% endblock %}

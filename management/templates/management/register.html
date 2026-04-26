@@ -1,0 +1,51 @@
+{% extends 'management/auth_base.html' %}
+
+{% block notifications %}
+    {% for error in form.non_field_errors %}
+        <div data-notify data-level="error">{{ error }}</div>
+    {% endfor %}
+    {% for field in form %}
+        {% for error in field.errors %}
+            <div data-notify data-level="error">{{ error }}</div>
+        {% endfor %}
+    {% endfor %}
+{% endblock %}
+
+{% block content %}
+<h1>Create Account</h1>
+<p class="subtitle">Register first before using the system.</p>
+
+<form method="post" novalidate>
+    {% csrf_token %}
+    <p>
+        <label for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>
+        {{ form.username }}
+    </p>
+    <p>
+        <label for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
+        {{ form.email }}
+    </p>
+    <p>
+        <label for="{{ form.verification_code.id_for_label }}">{{ form.verification_code.label }}</label>
+        {{ form.verification_code }}
+    </p>
+    <p>
+        <label for="{{ form.password1.id_for_label }}">{{ form.password1.label }}</label>
+        {{ form.password1 }}
+    </p>
+    <p>
+        <label for="{{ form.password2.id_for_label }}">{{ form.password2.label }}</label>
+        {{ form.password2 }}
+    </p>
+    <button type="submit" class="btn">Register</button>
+</form>
+
+<p class="links">
+    Already have an account?
+    <a href="{% url 'login' %}">Log in</a>
+</p>
+<p class="links">
+    Need a login code?
+    <a href="{% url 'request-verification-code' %}">Request here</a>
+</p>
+{% endblock %}

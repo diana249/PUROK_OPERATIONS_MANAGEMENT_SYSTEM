@@ -1,0 +1,121 @@
+{% extends 'management/base.html' %}
+
+{% block content %}
+<section class="panel">
+    <div class="section-head">
+        <div>
+            <h2>DBMS Lab</h2>
+            <p>Live SQL demonstrations for joins, subqueries, grouping, HAVING, and query plans.</p>
+        </div>
+    </div>
+    <p style="margin:0;color:var(--muted);">Database engine: <strong>{{ db_vendor }}</strong></p>
+</section>
+
+<section class="panel" style="margin-top:16px;">
+    <h3 style="margin-bottom:8px;">1) JOIN + GROUP BY + HAVING</h3>
+    <pre style="margin:0 0 12px;background:#f7fbfc;border:1px solid var(--line);border-radius:10px;padding:12px;overflow:auto;">{{ join_result.sql }}</pre>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    {% for col in join_result.columns %}
+                    <th>{{ col }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in join_result.rows %}
+                <tr>
+                    {% for value in row %}
+                    <td>{{ value }}</td>
+                    {% endfor %}
+                </tr>
+                {% empty %}
+                <tr><td colspan="{{ join_result.columns|length }}">No rows.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="panel" style="margin-top:16px;">
+    <h3 style="margin-bottom:8px;">2) SUBQUERY</h3>
+    <pre style="margin:0 0 12px;background:#f7fbfc;border:1px solid var(--line);border-radius:10px;padding:12px;overflow:auto;">{{ subquery_result.sql }}</pre>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    {% for col in subquery_result.columns %}
+                    <th>{{ col }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in subquery_result.rows %}
+                <tr>
+                    {% for value in row %}
+                    <td>{{ value }}</td>
+                    {% endfor %}
+                </tr>
+                {% empty %}
+                <tr><td colspan="{{ subquery_result.columns|length }}">No rows.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="panel" style="margin-top:16px;">
+    <h3 style="margin-bottom:8px;">3) AGGREGATION + HAVING</h3>
+    <pre style="margin:0 0 12px;background:#f7fbfc;border:1px solid var(--line);border-radius:10px;padding:12px;overflow:auto;">{{ aggregate_result.sql }}</pre>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    {% for col in aggregate_result.columns %}
+                    <th>{{ col }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in aggregate_result.rows %}
+                <tr>
+                    {% for value in row %}
+                    <td>{{ value }}</td>
+                    {% endfor %}
+                </tr>
+                {% empty %}
+                <tr><td colspan="{{ aggregate_result.columns|length }}">No rows.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<section class="panel" style="margin-top:16px;">
+    <h3 style="margin-bottom:8px;">4) Query Plan (EXPLAIN)</h3>
+    <pre style="margin:0 0 12px;background:#f7fbfc;border:1px solid var(--line);border-radius:10px;padding:12px;overflow:auto;">{{ explain_result.sql }}</pre>
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    {% for col in explain_result.columns %}
+                    <th>{{ col }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in explain_result.rows %}
+                <tr>
+                    {% for value in row %}
+                    <td>{{ value }}</td>
+                    {% endfor %}
+                </tr>
+                {% empty %}
+                <tr><td colspan="{{ explain_result.columns|length }}">No rows.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,229 @@
+{% extends 'management/base.html' %}
+
+{% block content %}
+<style>
+    .pending-shell {
+        background:
+            radial-gradient(circle at 10% 0%, rgba(255, 255, 255, 0.34), transparent 36%),
+            linear-gradient(145deg, #c8ddc9 0%, #c4dbc8 48%, #c1d8c5 100%);
+        border-color: #b2c9bc;
+    }
+
+    .pending-head h2 {
+        font-size: 1.85rem;
+        line-height: 1.1;
+        color: #05253a;
+    }
+
+    .pending-head p {
+        font-size: 0.82rem;
+        color: #2f5565;
+    }
+
+    .pending-tabs {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 10px;
+    }
+
+    .pending-tabs .btn.active {
+        background: linear-gradient(135deg, #0b7a83, #075f67);
+        color: #fff;
+        border-color: #055a61;
+    }
+
+    .pending-card {
+        background: linear-gradient(180deg, #e8efea 0%, #e3ece6 100%);
+        border-color: #afc7ba;
+        border-radius: 16px;
+        box-shadow: 0 10px 24px rgba(24, 62, 52, 0.08);
+    }
+
+    .pending-card h3 {
+        font-size: 1.65rem;
+        line-height: 1.15;
+        margin: 0 0 10px;
+        color: #05253a;
+    }
+
+    .pending-card .pending-table {
+        border-spacing: 0 8px;
+    }
+
+    .pending-card .pending-table th {
+        text-transform: uppercase;
+        letter-spacing: 0.7px;
+        font-size: 0.8rem;
+        color: #2d5764;
+        padding: 2px 10px 7px;
+        border-bottom: 1px solid #8ea89b;
+    }
+
+    .pending-card .pending-table td {
+        font-size: 0.88rem;
+        color: #184358;
+        background: #edf4ee;
+        border: 1px solid #8ea89b;
+        padding: 10px 10px;
+    }
+
+    .pending-card .pending-table tbody tr:hover td {
+        background: #f4faf5;
+        box-shadow: 0 8px 17px rgba(21, 58, 70, 0.08);
+    }
+
+    .pending-card .pending-table tbody tr td:first-child {
+        border-left: 1px solid #b2c9bc;
+        border-top-left-radius: 16px;
+        border-bottom-left-radius: 16px;
+    }
+
+    .pending-card .pending-table tbody tr td:last-child {
+        border-right: 1px solid #b2c9bc;
+        border-top-right-radius: 16px;
+        border-bottom-right-radius: 16px;
+    }
+
+    .pending-card .empty-row td {
+        border-radius: 18px;
+        border: 1px solid #adc7bb;
+        background: #dbe5de;
+        font-weight: 600;
+    }
+
+    .priority-pill {
+        display: inline-flex;
+        align-items: center;
+        border-radius: 999px;
+        padding: 4px 10px;
+        font-size: 0.75rem;
+        font-weight: 700;
+    }
+
+    .priority-high {
+        background: #f3d2d6;
+        color: #7a2d39;
+    }
+
+    .priority-medium {
+        background: #f2e2c7;
+        color: #6f4b22;
+    }
+
+    .priority-low {
+        background: #d7e8df;
+        color: #2b614c;
+    }
+
+    .pending-action {
+        min-width: 72px;
+    }
+
+    .tasks-meta {
+        margin: 0 0 10px;
+        font-size: 0.8rem;
+        color: #2f5565;
+        font-weight: 700;
+    }
+</style>
+<section class="panel pending-shell">
+    <div class="section-head">
+        <div class="pending-head">
+            <h2>Pending Tasks</h2>
+            <p>Manage follow-up work items from real-time system status.</p>
+        </div>
+    </div>
+
+    <div class="pending-tabs" id="pending-task-filters">
+        <button type="button" class="btn btn-secondary active" data-filter="all">All Tasks</button>
+        <button type="button" class="btn btn-secondary" data-filter="high">High Priority</button>
+        <button type="button" class="btn btn-secondary" data-filter="medium">Medium Priority</button>
+        <button type="button" class="btn btn-secondary" data-filter="low">Low Priority</button>
+    </div>
+
+    <article class="panel pending-card">
+        <div class="section-head" style="margin-bottom:8px;">
+            <h3>Pending Tasks</h3>
+            <a class="btn btn-secondary" href="{% url 'pending-tasks-export-word' %}">Export Word</a>
+        </div>
+        <p class="tasks-meta" id="tasks-meta">Showing all tasks.</p>
+
+        <div class="table-wrap">
+            <table class="pending-table">
+                <thead>
+                    <tr>
+                        <th>Task</th>
+                        <th>Count</th>
+                        <th>Priority</th>
+                        <th>Target</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in tasks %}
+                    <tr data-priority="{{ item.priority|lower }}">
+                        <td>{{ item.task }}</td>
+                        <td>{{ item.count }}</td>
+                        <td>
+                            {% if item.priority == "High" %}
+                            <span class="priority-pill priority-high">{{ item.priority }}</span>
+                            {% elif item.priority == "Medium" %}
+                            <span class="priority-pill priority-medium">{{ item.priority }}</span>
+                            {% else %}
+                            <span class="priority-pill priority-low">{{ item.priority }}</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ item.target }}</td>
+                        <td><a class="btn btn-secondary pending-action" href="{{ item.url }}">Open</a></td>
+                    </tr>
+                    {% empty %}
+                    <tr class="empty-row">
+                        <td colspan="5">No pending tasks.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </article>
+</section>
+<script>
+    (function () {
+        const filterBar = document.getElementById("pending-task-filters");
+        const meta = document.getElementById("tasks-meta");
+        if (!filterBar) return;
+
+        const buttons = Array.from(filterBar.querySelectorAll("button[data-filter]"));
+        const rows = Array.from(document.querySelectorAll("tbody tr[data-priority]"));
+
+        function setMeta(filter, visibleCount) {
+            if (!meta) return;
+            if (filter === "all") {
+                meta.textContent = "Showing all tasks.";
+                return;
+            }
+            meta.textContent = "Showing " + visibleCount + " " + filter + " priority task(s).";
+        }
+
+        function applyFilter(filter) {
+            let visibleCount = 0;
+            rows.forEach((row) => {
+                const match = filter === "all" || row.dataset.priority === filter;
+                row.style.display = match ? "" : "none";
+                if (match) visibleCount += 1;
+            });
+            setMeta(filter, visibleCount);
+        }
+
+        buttons.forEach((button) => {
+            button.addEventListener("click", () => {
+                buttons.forEach((b) => b.classList.remove("active"));
+                button.classList.add("active");
+                applyFilter(button.dataset.filter || "all");
+            });
+        });
+
+        applyFilter("all");
+    })();
+</script>
+{% endblock %}

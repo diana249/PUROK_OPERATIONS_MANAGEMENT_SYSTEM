@@ -1,0 +1,126 @@
+{% extends 'management/base.html' %}
+
+{% block content %}
+<section class="panel">
+    <div class="section-head">
+        <div>
+            <h2>{{ title }}</h2>
+            <p>Create a fee entry for monthly, annual, special, or penalty charges.</p>
+        </div>
+    </div>
+
+    <form method="post" id="fee-form">
+        {% csrf_token %}
+        <div class="panel" style="padding:14px;margin-bottom:12px;">
+            <h3 style="font-size:1rem;margin:0 0 10px;">Resident Selection</h3>
+            <p>
+                <label for="resident-combo-input">{{ form.resident.label }}:</label>
+                <div style="position:relative;">
+                    <div style="display:flex;gap:0;">
+                        <input
+                            id="resident-combo-input"
+                            type="text"
+                            placeholder="Type resident name or click arrow..."
+                            autocomplete="off"
+                            style="border-top-right-radius:0;border-bottom-right-radius:0;"
+                        >
+                        <button
+                            type="button"
+                            id="resident-combo-btn"
+                            style="padding:0 14px;border:1px solid #c9d8de;border-left:0;border-top-right-radius:10px;border-bottom-right-radius:10px;background:#eef4f6;cursor:pointer;"
+                            aria-label="Show resident list"
+                        >&#9662;</button>
+                    </div>
+                    <div
+                        id="resident-combo-list"
+                        style="display:none;position:absolute;left:0;right:0;top:100%;max-height:220px;overflow:auto;background:#fff;border:1px solid #c9d8de;border-radius:10px;z-index:20;box-shadow:0 10px 24px rgba(10,35,45,.12);"
+                    ></div>
+                </div>
+                <div style="display:none;">
+                    {{ form.resident }}
+                </div>
+                {% if form.resident.errors %}
+                    <span style="color:#b43c4a;font-weight:700;">{{ form.resident.errors|striptags }}</span>
+                {% endif %}
+            </p>
+        </div>
+
+        {% for field in form %}
+            {% if field.name != "resident" %}
+                <p>
+                    <label for="{{ field.id_for_label }}">{{ field.label }}:</label>
+                    {{ field }}
+                    {% if field.errors %}
+                        <span style="color:#b43c4a;font-weight:700;">{{ field.errors|striptags }}</span>
+                    {% endif %}
+                </p>
+            {% endif %}
+        {% endfor %}
+        <div class="form-actions">
+            <button type="submit" class="btn btn-success">Save</button>
+            <a href="{% url 'fee-list' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</section>
+<script>
+    (function () {
+        const searchInput = document.getElementById("resident-combo-input");
+        const toggleBtn = document.getElementById("resident-combo-btn");
+        const listBox = document.getElementById("resident-combo-list");
+        const residentSelect = document.getElementById("id_resident");
+        if (!searchInput || !residentSelect || !toggleBtn || !listBox) return;
+
+        const allOptions = Array.from(residentSelect.options)
+        .filter((opt) => opt.value)
+        .map((opt) => ({ value: opt.value, text: opt.textContent || "" }));
+
+        function renderFilteredOptions(term, showList) {
+            const query = term.toLowerCase().trim();
+            const matches = allOptions.filter((opt) => !query || opt.text.toLowerCase().includes(query));
+
+            listBox.innerHTML = "";
+            matches.forEach((opt) => {
+                const item = document.createElement("button");
+                item.type = "button";
+                item.textContent = opt.text;
+                item.style.display = "block";
+                item.style.width = "100%";
+                item.style.textAlign = "left";
+                item.style.padding = "10px 12px";
+                item.style.border = "0";
+                item.style.background = "#fff";
+                item.style.cursor = "pointer";
+                item.addEventListener("mouseenter", () => { item.style.background = "#eef7f8"; });
+                item.addEventListener("mouseleave", () => { item.style.background = "#fff"; });
+                item.addEventListener("click", () => {
+                    residentSelect.value = opt.value;
+                    searchInput.value = opt.text;
+                    listBox.style.display = "none";
+                });
+                listBox.appendChild(item);
+            });
+            listBox.style.display = (showList && matches.length) ? "block" : "none";
+        }
+
+        const selectedOption = allOptions.find((opt) => opt.value === residentSelect.value);
+        if (selectedOption) searchInput.value = selectedOption.text;
+
+        searchInput.addEventListener("input", function () {
+            renderFilteredOptions(this.value, true);
+            const typed = this.value.trim().toLowerCase();
+            const exact = allOptions.find((opt) => opt.text.toLowerCase() === typed);
+            residentSelect.value = exact ? exact.value : "";
+        });
+
+        toggleBtn.addEventListener("click", function () {
+            const willOpen = listBox.style.display !== "block";
+            renderFilteredOptions(searchInput.value, willOpen);
+        });
+
+        document.addEventListener("click", function (event) {
+            const inside = searchInput.contains(event.target) || toggleBtn.contains(event.target) || listBox.contains(event.target);
+            if (!inside) listBox.style.display = "none";
+        });
+    })();
+</script>
+{% endblock %}

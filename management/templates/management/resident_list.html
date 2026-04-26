@@ -1,0 +1,132 @@
+{% extends 'management/base.html' %}
+
+{% block content %}
+<style>
+    .residents-page {
+        background:
+            radial-gradient(circle at 7% 0%, rgba(255, 255, 255, 0.34), transparent 33%),
+            linear-gradient(145deg, #c8ddc9 0%, #c4dbc7 46%, #c0d8c4 100%);
+    }
+
+    .residents-page .residents-search {
+        background: #dfe8e2;
+        border: 1px solid #b4cabd;
+        border-radius: 14px;
+        padding: 8px;
+    }
+
+    .residents-page .residents-table {
+        border-spacing: 0 8px;
+    }
+
+    .residents-page .residents-table th {
+        text-transform: uppercase;
+        letter-spacing: 0.75px;
+        font-size: 0.8rem;
+        color: #2d5764;
+        padding: 2px 10px 7px;
+        border-bottom: 1px solid #8ea89b;
+    }
+
+    .residents-page .residents-table td {
+        background: #edf4ee;
+        border: 1px solid #8ea89b;
+        color: #173f54;
+        font-size: 0.88rem;
+        padding: 10px 10px;
+    }
+
+    .residents-page .residents-table tbody tr:hover td {
+        background: #f4faf5;
+        box-shadow: 0 8px 17px rgba(21, 58, 70, 0.08);
+    }
+
+    .residents-page .residents-table tbody tr td:first-child {
+        border-left: 1px solid #b3c9bc;
+        border-top-left-radius: 16px;
+        border-bottom-left-radius: 16px;
+    }
+
+    .residents-page .residents-table tbody tr td:last-child {
+        border-right: 1px solid #b3c9bc;
+        border-top-right-radius: 16px;
+        border-bottom-right-radius: 16px;
+    }
+
+    .residents-page .pagination-row {
+        margin-top: 14px;
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+</style>
+
+<section class="panel feature-fees residents-page">
+    <div class="section-head">
+        <div>
+            <h2>Residents</h2>
+            <p>Manage resident records and search by name or purok.</p>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+            <a class="btn btn-secondary" href="{% url 'resident-export-word' %}?q={{ query|urlencode }}">Export Word</a>
+            <a class="btn btn-primary" href="{% url 'resident-add' %}">Add Resident</a>
+        </div>
+    </div>
+
+    <form method="get" class="search-row residents-search">
+        <input type="text" name="q" value="{{ query|default:'' }}" placeholder="Search residents...">
+        <button class="btn btn-primary" type="submit">Search</button>
+        <a href="{% url 'resident-list' %}" class="btn btn-secondary">Reset</a>
+    </form>
+
+    <div class="table-wrap">
+        <table class="residents-table">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Household Number</th>
+                    <th>Gender</th>
+                    <th>Place of Birth</th>
+                    <th>Address</th>
+                    <th>Date of Birth</th>
+                    <th>Contact Number</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for resident in residents %}
+                <tr>
+                    <td>{{ resident.first_name }} {{ resident.last_name }}</td>
+                    <td>{{ resident.household_number|default:"-" }}</td>
+                    <td>{{ resident.gender|default:"-" }}</td>
+                    <td>{{ resident.place_of_birth|default:"-" }}</td>
+                    <td>{{ resident.address|default:"-" }}</td>
+                    <td>{{ resident.date_of_birth }}</td>
+                    <td>{{ resident.contact_number }}</td>
+                    <td style="display:flex;gap:8px;flex-wrap:wrap;">
+                        <a class="btn btn-warning" href="{% url 'resident-edit' resident.pk %}">Edit</a>
+                        <a class="btn btn-danger" href="{% url 'resident-delete' resident.pk %}">Delete</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8">No residents found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if residents.paginator.num_pages > 1 %}
+    <div class="pagination-row">
+        {% if residents.has_previous %}
+        <a class="btn btn-secondary" href="?q={{ query|urlencode }}&page={{ residents.previous_page_number }}">Previous</a>
+        {% endif %}
+        <span class="btn btn-secondary">Page {{ residents.number }} of {{ residents.paginator.num_pages }}</span>
+        {% if residents.has_next %}
+        <a class="btn btn-secondary" href="?q={{ query|urlencode }}&page={{ residents.next_page_number }}">Next</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</section>
+{% endblock %}

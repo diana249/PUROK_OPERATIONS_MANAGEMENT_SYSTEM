@@ -1,0 +1,74 @@
+{% extends 'management/base.html' %}
+
+{% block content %}
+<section class="panel" style="background:#f4ecde;">
+    <div class="section-head">
+        <div>
+            <h2 style="font-size:1.1rem;">Pay Fee</h2>
+            <p style="font-size:0.8rem;">Provide your GCash payment reference details.</p>
+        </div>
+        <a class="btn btn-secondary" href="{% url 'fee-list' %}">Back to Fees</a>
+    </div>
+
+    <article class="panel" style="padding:10px;border-radius:12px;background:#f8f2e8;margin-bottom:10px;">
+        <h3 style="font-size:0.9rem;margin-bottom:4px;">Payment Information</h3>
+        <p style="margin:0;font-size:0.78rem;color:var(--muted);">
+            GCash Name: <strong>{{ manual_gcash_name }}</strong> |
+            GCash Number: <strong>{{ manual_gcash_number }}</strong>
+        </p>
+    </article>
+
+    <article class="panel" style="padding:10px;border-radius:12px;background:#fbf6ee;">
+        <h3 style="font-size:0.9rem;margin-bottom:8px;">Fee Details</h3>
+        <p style="margin:0 0 10px;font-size:0.78rem;color:var(--muted);">
+            Amount to pay: <strong>{{ fee.amount }}</strong> | Type: <strong>{{ fee.fee_type }}</strong>
+        </p>
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <div class="form-actions">
+                <button class="btn btn-primary" type="submit">Submit Payment</button>
+                <a class="btn btn-secondary" href="{% url 'fee-list' %}">Cancel</a>
+            </div>
+        </form>
+    </article>
+
+    {% if payment_transactions %}
+    <article class="panel" style="padding:10px;border-radius:12px;background:#fbf6ee;margin-top:10px;">
+        <h3 style="font-size:0.9rem;margin-bottom:8px;">Previous Payment Submissions</h3>
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Reference</th>
+                        <th>Amount</th>
+                        <th>Payment Date</th>
+                        <th>Status</th>
+                        <th>Admin Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for tx in payment_transactions %}
+                    <tr>
+                        <td>{{ tx.gcash_reference }}</td>
+                        <td>{{ tx.amount_sent }}</td>
+                        <td>{{ tx.payment_date }}</td>
+                        <td>
+                            {% if tx.status == 'approved' %}
+                            <span class="badge badge-success">Approved</span>
+                            {% elif tx.status == 'rejected' %}
+                            <span class="badge badge-danger">Rejected</span>
+                            {% else %}
+                            <span class="badge badge-warning">Pending</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ tx.admin_notes|default:"-" }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </article>
+    {% endif %}
+</section>
+{% endblock %}

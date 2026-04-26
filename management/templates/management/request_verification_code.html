@@ -1,0 +1,35 @@
+{% extends 'management/auth_base.html' %}
+
+{% block notifications %}
+    {% for error in form.non_field_errors %}
+        <div data-notify data-level="error">{{ error }}</div>
+    {% endfor %}
+    {% for field in form %}
+        {% for error in field.errors %}
+            <div data-notify data-level="error">{{ error }}</div>
+        {% endfor %}
+    {% endfor %}
+{% endblock %}
+
+{% block content %}
+<h1>Request Login Code</h1>
+<p class="subtitle">Enter your name and email. Admin will review your request, then your one-time code will be sent to your email.</p>
+
+<form method="post" novalidate>
+    {% csrf_token %}
+    <p>
+        <label for="{{ form.name.id_for_label }}">{{ form.name.label }}</label>
+        {{ form.name }}
+    </p>
+    <p>
+        <label for="{{ form.email.id_for_label }}">{{ form.email.label }}</label>
+        {{ form.email }}
+    </p>
+    <button type="submit" class="btn">Request Login Code</button>
+</form>
+
+<p class="links">
+    Already have a code?
+    <a href="{% url 'register' %}">Go to Register</a>
+</p>
+{% endblock %}

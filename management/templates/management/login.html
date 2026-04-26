@@ -1,0 +1,45 @@
+{% extends 'management/auth_base.html' %}
+
+{% block notifications %}
+    {% for error in form.non_field_errors %}
+        <div data-notify data-level="error">{{ error }}</div>
+    {% endfor %}
+    {% for field in form %}
+        {% for error in field.errors %}
+            <div data-notify data-level="error">{{ error }}</div>
+        {% endfor %}
+    {% endfor %}
+{% endblock %}
+
+{% block content %}
+<h1>Log In</h1>
+<p class="subtitle">Sign in to access the Purok Management System.</p>
+
+<form method="post" novalidate>
+    {% csrf_token %}
+    <p>
+        <label for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>
+        {{ form.username }}
+    </p>
+    <p>
+        <label for="{{ form.password.id_for_label }}">{{ form.password.label }}</label>
+        {{ form.password }}
+    </p>
+    {% if form.errors %}
+    <p class="links" style="margin-top:4px;margin-bottom:10px;text-align:left;">
+        Forgot password?
+        <a href="{% url 'forgot-password-request' %}">Reset with reset code</a>
+    </p>
+    {% endif %}
+    <button type="submit" class="btn">Log In</button>
+</form>
+
+<p class="links">
+    No account yet?
+    <a href="{% url 'register' %}">Register here</a>
+</p>
+<p class="links">
+    Need a login code?
+    <a href="{% url 'request-verification-code' %}">Request here</a>
+</p>
+{% endblock %}

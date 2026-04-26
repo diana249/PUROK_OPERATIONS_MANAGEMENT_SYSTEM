@@ -1,0 +1,862 @@
+{% extends 'management/base.html' %}
+
+{% block content %}
+<style>
+    .topbar {
+        background: #e7eee8;
+        border-bottom: 1px solid #c7d9cd;
+        padding: 8px 12px;
+    }
+    .topbar-inner {
+        max-width: 1820px;
+    }
+    .top-nav {
+        background: #d7e4da;
+        border-color: #bfd0c4;
+        padding: 2px;
+        gap: 3px;
+    }
+    .nav-link {
+        font-size: 0.82rem;
+        padding: 8px 10px;
+    }
+    .nav-link.active {
+        background: #f4faf5;
+        color: #0a6e79;
+        border-color: #9fc2b7;
+    }
+    .account-pill {
+        font-size: 0.84rem;
+        padding: 6px 9px;
+    }
+    .role-pill {
+        font-size: 0.72rem;
+        padding: 3px 7px;
+    }
+    .shell {
+        width: min(1880px, 98.5vw);
+        margin: 0 auto 12px;
+    }
+    .settings-page {
+        background: #c9dfca;
+        border: 1px solid #b5cfba;
+        border-radius: 0;
+        padding: 10px 9px 12px;
+        box-shadow: none;
+    }
+    .settings-head {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 10px;
+    }
+    .settings-title {
+        margin: 0;
+        font-family: "Georgia", "Times New Roman", serif;
+        font-size: clamp(1.45rem, 2.3vw, 2.25rem);
+        line-height: 1.1;
+        color: #032235;
+    }
+    .settings-subtitle {
+        margin: 6px 0 0;
+        font-size: 0.84rem;
+        color: #315464;
+    }
+    .password-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        border-radius: 10px;
+        border: 1px solid #b7d0bf;
+        background: #cfe2d2;
+        color: #032235;
+        font-size: 0.86rem;
+        font-weight: 700;
+        text-decoration: none;
+        padding: 8px 12px;
+        box-shadow: 0 2px 6px rgba(24, 53, 61, 0.08);
+    }
+    .password-btn svg {
+        width: 16px;
+        height: 16px;
+    }
+    .settings-head-actions {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+    }
+    .edit-profile-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        border-radius: 10px;
+        border: 1px solid #a9c6b4;
+        background: #dcebe0;
+        color: #032235;
+        font-size: 0.86rem;
+        font-weight: 700;
+        padding: 8px 12px;
+        cursor: pointer;
+        box-shadow: 0 2px 6px rgba(24, 53, 61, 0.08);
+    }
+    .edit-profile-btn svg {
+        width: 16px;
+        height: 16px;
+    }
+    .field-errors {
+        margin-bottom: 9px;
+        color: #a3273a;
+        font-weight: 700;
+        font-size: 0.82rem;
+    }
+    .settings-card {
+        background: #e0e8e2;
+        border: 1px solid #b8cdc0;
+        border-radius: 14px;
+        box-shadow: 0 2px 8px rgba(21, 48, 56, 0.1);
+    }
+    .card-head {
+        padding: 16px 16px;
+        border-bottom: 1px solid #b8cdc0;
+    }
+    .card-head h3 {
+        margin: 0;
+        font-size: 1.45rem;
+        font-weight: 800;
+        color: #032235;
+    }
+    .card-head p {
+        margin: 9px 0 0;
+        font-size: 0.9rem;
+        color: #315464;
+    }
+    .profile-body {
+        padding: 14px 16px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+    .profile-avatar-area {
+        position: relative;
+        width: 94px;
+        height: 94px;
+        flex: 0 0 auto;
+    }
+    .profile-avatar-fallback,
+    .profile-picture-preview {
+        width: 94px;
+        height: 94px;
+        border-radius: 50%;
+        border: 2px solid #a9c7bf;
+        box-shadow: 0 3px 8px rgba(26, 53, 61, 0.12);
+        object-fit: cover;
+    }
+    .profile-avatar-fallback {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(145deg, #dfdfd3, #ded8c8);
+        color: #0d6f77;
+        font-size: 1.9rem;
+        font-weight: 800;
+        text-transform: uppercase;
+    }
+    .profile-picture-wrap {
+        position: absolute;
+        inset: 0;
+    }
+    .profile-picture-wrap .profile-picture-preview {
+        margin: 0;
+        display: block;
+    }
+    .profile-delete-btn {
+        position: absolute;
+        top: -5px;
+        right: -5px;
+        width: 26px;
+        height: 26px;
+        border-radius: 50%;
+        border: 1px solid #c98e95;
+        background: #fff3f5;
+        color: #9f2f3e;
+        font-size: 15px;
+        font-weight: 800;
+        line-height: 1;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .profile-camera-badge {
+        position: absolute;
+        right: -4px;
+        bottom: -4px;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: #0a7a77;
+        border: 3px solid #e0e8e2;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+    }
+    .profile-camera-badge svg {
+        width: 16px;
+        height: 16px;
+    }
+    .profile-actions {
+        min-width: 0;
+    }
+    .profile-actions h4 {
+        margin: 0;
+        font-size: 1.35rem;
+        color: #032235;
+    }
+    .profile-actions p {
+        margin: 6px 0 14px;
+        font-size: 0.86rem;
+        color: #315464;
+    }
+    .profile-file-input {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+    }
+    .profile-upload-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        border: 1px solid #afd0b9;
+        background: #bfdbbf;
+        color: #032235;
+        font-size: 0.9rem;
+        font-weight: 700;
+        border-radius: 10px;
+        padding: 8px 11px;
+        cursor: pointer;
+        box-shadow: 0 2px 6px rgba(24, 53, 61, 0.08);
+    }
+    .profile-upload-btn svg {
+        width: 16px;
+        height: 16px;
+    }
+    .profile-upload-btn:disabled,
+    .profile-delete-btn:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+    }
+    .settings-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 10px;
+    }
+    .settings-fields {
+        padding: 14px 16px 14px;
+    }
+    .info-title {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        margin: 0;
+        font-size: 1.32rem;
+        color: #032235;
+    }
+    .info-title svg {
+        width: 16px;
+        height: 16px;
+        color: #0b7c80;
+    }
+    .info-subtitle {
+        margin: 8px 0 0;
+        font-size: 0.86rem;
+        color: #315464;
+    }
+    .fields-grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+    }
+    .field-wrap {
+        margin-top: 9px;
+    }
+    .field-wrap label {
+        margin-bottom: 5px;
+        font-size: 0.84rem;
+        font-weight: 800;
+        color: #032235;
+    }
+    .field-wrap input,
+    .field-wrap select,
+    .field-wrap textarea {
+        width: 100%;
+        background: #dfe7e1;
+        border: 1px solid #b6cbc0;
+        border-radius: 10px;
+        padding: 8px 10px;
+        min-height: 38px;
+        font-size: 0.9rem;
+        color: #24495a;
+        box-shadow: 0 2px 5px rgba(22, 49, 58, 0.07);
+    }
+    .field-wrap.field-error input,
+    .field-wrap.field-error select,
+    .field-wrap.field-error textarea {
+        border: 1px solid #d14f60 !important;
+        background: #fff6f7;
+    }
+    .field-errors.inline {
+        margin: 6px 0 0;
+        font-size: 0.8rem;
+    }
+    .field-icon-wrap {
+        position: relative;
+    }
+    .field-icon-wrap svg {
+        position: absolute;
+        left: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 15px;
+        height: 15px;
+        color: #3f646f;
+        pointer-events: none;
+    }
+    .field-icon-wrap input {
+        padding-left: 32px;
+    }
+    .settings-foot {
+        margin-top: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        background: #e0e8e2;
+        border: 1px solid #b8cdc0;
+        border-radius: 14px;
+        box-shadow: 0 2px 8px rgba(21, 48, 56, 0.1);
+        padding: 12px 14px;
+    }
+    .settings-foot-note {
+        margin: 0;
+        color: #315464;
+        font-size: 0.84rem;
+    }
+    .settings-foot-actions {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .cancel-btn {
+        border: 0;
+        background: transparent;
+        color: #032235;
+        font-size: 1rem;
+        font-weight: 700;
+        text-decoration: none;
+        padding: 6px 8px;
+    }
+    .update-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        border: 0;
+        border-radius: 10px;
+        background: #066b73;
+        color: #fff;
+        font-size: 0.88rem;
+        font-weight: 800;
+        padding: 8px 12px;
+        cursor: pointer;
+    }
+    .update-btn svg {
+        width: 15px;
+        height: 15px;
+    }
+    @media (max-width: 1100px) {
+        .settings-grid {
+            grid-template-columns: 1fr;
+        }
+        .profile-body {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+    }
+    @media (max-width: 700px) {
+        .settings-head {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+        .fields-grid-2 {
+            grid-template-columns: 1fr;
+            gap: 0;
+        }
+        .card-head,
+        .profile-body,
+        .settings-fields {
+            padding: 16px 14px;
+        }
+        .settings-foot {
+            flex-direction: column;
+            align-items: flex-start;
+            padding: 14px;
+        }
+    }
+</style>
+
+<section class="panel settings-page">
+    <div class="settings-head">
+        <div>
+            <h2 class="settings-title">User Settings</h2>
+            <p class="settings-subtitle">Account and profile information for the current user.</p>
+        </div>
+        <div class="settings-head-actions">
+            <button type="button" class="edit-profile-btn" id="edit-profile-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 20h9"></path>
+                    <path d="M16.5 3.5a2.1 2.1 0 1 1 3 3L8 18l-4 1 1-4 11.5-11.5z"></path>
+                </svg>
+                <span>Edit Profile Info</span>
+            </button>
+            <a class="password-btn" href="{% url 'password-change' %}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 3a4 4 0 0 1 4 4v2"></path>
+                    <path d="M5 21h6"></path>
+                    <path d="M10.5 13.5 6 18l-1 3 3-1 4.5-4.5"></path>
+                    <path d="m15 9 2 2"></path>
+                    <path d="M12.5 11.5 15 9a2.1 2.1 0 1 1 3 3l-2.5 2.5"></path>
+                </svg>
+                <span>Change Password</span>
+            </a>
+        </div>
+    </div>
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {% if user_form.non_field_errors %}
+            <div class="field-errors">{{ user_form.non_field_errors }}</div>
+        {% endif %}
+        {% if resident_form.non_field_errors %}
+            <div class="field-errors">{{ resident_form.non_field_errors }}</div>
+        {% endif %}
+        {% if profile_form.non_field_errors %}
+            <div class="field-errors">{{ profile_form.non_field_errors }}</div>
+        {% endif %}
+
+        <article class="settings-card">
+            <div class="card-head">
+                <h3>Profile Picture</h3>
+                <p>This appears on your profile and audit logs.</p>
+            </div>
+            <div class="profile-body">
+                <div class="profile-avatar-area">
+                    <div class="profile-avatar-fallback" id="profile-fallback-avatar">{{ request.user.username|first|upper }}</div>
+                    <div class="profile-picture-wrap" id="profile-picture-wrap" style="{% if not profile_form.instance.profile_picture %}display:none;{% endif %}">
+                        <img
+                            id="profile-picture-preview"
+                            class="profile-picture-preview"
+                            src="{% if profile_form.instance.profile_picture %}{{ profile_form.instance.profile_picture.url }}{% endif %}"
+                            alt="Profile picture preview"
+                        >
+                        <button type="button" class="profile-delete-btn" id="profile-delete-btn" aria-label="Delete profile picture">&times;</button>
+                    </div>
+                    <span class="profile-camera-badge" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M3 8h4l2-3h6l2 3h4v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                            <circle cx="12" cy="13" r="3.5"></circle>
+                        </svg>
+                    </span>
+                </div>
+
+                <div class="profile-actions">
+                    <h4>Upload Picture</h4>
+                    <p>PNG or JPG, max 2MB. Square images look best.</p>
+                    <div class="field-wrap{% if profile_form.profile_picture.errors %} field-error{% endif %}" style="margin-top:0;">
+                        <input
+                            type="file"
+                            name="{{ profile_form.profile_picture.html_name }}"
+                            id="{{ profile_form.profile_picture.id_for_label }}"
+                            class="profile-file-input"
+                            accept="image/*"
+                        >
+                        <button type="button" class="profile-upload-btn" id="profile-upload-trigger">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 16V4"></path>
+                                <path d="m7 9 5-5 5 5"></path>
+                                <path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"></path>
+                            </svg>
+                            <span>Choose photo</span>
+                        </button>
+                        {% if profile_form.instance.profile_picture %}
+                            <input
+                                type="checkbox"
+                                name="{{ profile_form.profile_picture.html_name }}-clear"
+                                id="{{ profile_form.profile_picture.html_name }}-clear_id"
+                                hidden
+                            >
+                        {% endif %}
+                        {% if profile_form.profile_picture.errors %}
+                            <div class="field-errors inline">{{ profile_form.profile_picture.errors|striptags }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <div class="settings-grid">
+            <article class="settings-card">
+                <div class="card-head">
+                    <h3 class="info-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="8" r="4"></circle>
+                            <path d="M4 21c0-4 3.5-7 8-7s8 3 8 7"></path>
+                        </svg>
+                        <span>Account Information</span>
+                    </h3>
+                    <p class="info-subtitle">Used to sign in and identify you in the system.</p>
+                </div>
+                <div class="settings-fields">
+                    <div class="fields-grid-2">
+                        <div class="field-wrap{% if user_form.first_name.errors %} field-error{% endif %}">
+                            <label for="{{ user_form.first_name.id_for_label }}">{{ user_form.first_name.label }}</label>
+                            {{ user_form.first_name }}
+                            {% if user_form.first_name.errors %}
+                                <div class="field-errors inline">{{ user_form.first_name.errors|striptags }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="field-wrap{% if user_form.last_name.errors %} field-error{% endif %}">
+                            <label for="{{ user_form.last_name.id_for_label }}">{{ user_form.last_name.label }}</label>
+                            {{ user_form.last_name }}
+                            {% if user_form.last_name.errors %}
+                                <div class="field-errors inline">{{ user_form.last_name.errors|striptags }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="field-wrap{% if user_form.username.errors %} field-error{% endif %}">
+                        <label for="{{ user_form.username.id_for_label }}">{{ user_form.username.label }}</label>
+                        <div class="field-icon-wrap">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="9"></circle>
+                                <path d="M16 16h-3.6A4.4 4.4 0 1 1 16 8"></path>
+                                <path d="M16 8v8"></path>
+                            </svg>
+                            {{ user_form.username }}
+                        </div>
+                        {% if user_form.username.errors %}
+                            <div class="field-errors inline">{{ user_form.username.errors|striptags }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="field-wrap{% if user_form.email.errors %} field-error{% endif %}">
+                        <label for="{{ user_form.email.id_for_label }}">{{ user_form.email.label }}</label>
+                        <div class="field-icon-wrap">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M3 6h18v12H3z"></path>
+                                <path d="m3 7 9 7 9-7"></path>
+                            </svg>
+                            {{ user_form.email }}
+                        </div>
+                        {% if user_form.email.errors %}
+                            <div class="field-errors inline">{{ user_form.email.errors|striptags }}</div>
+                        {% endif %}
+                    </div>
+
+                    {% for field in user_form %}
+                        {% if field.name != 'first_name' and field.name != 'last_name' and field.name != 'username' and field.name != 'email' %}
+                            <div class="field-wrap{% if field.errors %} field-error{% endif %}">
+                                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                {{ field }}
+                                {% if field.errors %}
+                                    <div class="field-errors inline">{{ field.errors|striptags }}</div>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </article>
+
+            <article class="settings-card">
+                <div class="card-head">
+                    <h3 class="info-title">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 21s7-5.2 7-11a7 7 0 1 0-14 0c0 5.8 7 11 7 11z"></path>
+                            <circle cx="12" cy="10" r="2.4"></circle>
+                        </svg>
+                        <span>Resident Information</span>
+                    </h3>
+                    <p class="info-subtitle">Linked to your resident record in the purok directory.</p>
+                </div>
+                <div class="settings-fields">
+                    <div class="fields-grid-2">
+                        <div class="field-wrap{% if resident_form.first_name.errors %} field-error{% endif %}">
+                            <label for="{{ resident_form.first_name.id_for_label }}">{{ resident_form.first_name.label }}</label>
+                            {{ resident_form.first_name }}
+                            {% if resident_form.first_name.errors %}
+                                <div class="field-errors inline">{{ resident_form.first_name.errors|striptags }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="field-wrap{% if resident_form.last_name.errors %} field-error{% endif %}">
+                            <label for="{{ resident_form.last_name.id_for_label }}">{{ resident_form.last_name.label }}</label>
+                            {{ resident_form.last_name }}
+                            {% if resident_form.last_name.errors %}
+                                <div class="field-errors inline">{{ resident_form.last_name.errors|striptags }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="fields-grid-2">
+                        <div class="field-wrap{% if resident_form.household_number.errors %} field-error{% endif %}">
+                            <label for="{{ resident_form.household_number.id_for_label }}">{{ resident_form.household_number.label }}</label>
+                            {{ resident_form.household_number }}
+                            {% if resident_form.household_number.errors %}
+                                <div class="field-errors inline">{{ resident_form.household_number.errors|striptags }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="field-wrap{% if resident_form.gender.errors %} field-error{% endif %}">
+                            <label for="{{ resident_form.gender.id_for_label }}">{{ resident_form.gender.label }}</label>
+                            {{ resident_form.gender }}
+                            {% if resident_form.gender.errors %}
+                                <div class="field-errors inline">{{ resident_form.gender.errors|striptags }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="field-wrap{% if resident_form.age.errors %} field-error{% endif %}">
+                        <label for="{{ resident_form.age.id_for_label }}">{{ resident_form.age.label }}</label>
+                        {{ resident_form.age }}
+                        {% if resident_form.age.errors %}
+                            <div class="field-errors inline">{{ resident_form.age.errors|striptags }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="field-wrap{% if resident_form.date_of_birth.errors %} field-error{% endif %}">
+                        <label for="{{ resident_form.date_of_birth.id_for_label }}">{{ resident_form.date_of_birth.label }}</label>
+                        <div class="field-icon-wrap">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="5" width="18" height="16" rx="2"></rect>
+                                <path d="M8 3v4M16 3v4M3 10h18"></path>
+                            </svg>
+                            {{ resident_form.date_of_birth }}
+                        </div>
+                        {% if resident_form.date_of_birth.errors %}
+                            <div class="field-errors inline">{{ resident_form.date_of_birth.errors|striptags }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="field-wrap{% if resident_form.place_of_birth.errors %} field-error{% endif %}">
+                        <label for="{{ resident_form.place_of_birth.id_for_label }}">{{ resident_form.place_of_birth.label }}</label>
+                        {{ resident_form.place_of_birth }}
+                        {% if resident_form.place_of_birth.errors %}
+                            <div class="field-errors inline">{{ resident_form.place_of_birth.errors|striptags }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="field-wrap{% if resident_form.address.errors %} field-error{% endif %}">
+                        <label for="{{ resident_form.address.id_for_label }}">{{ resident_form.address.label }}</label>
+                        {{ resident_form.address }}
+                        {% if resident_form.address.errors %}
+                            <div class="field-errors inline">{{ resident_form.address.errors|striptags }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="field-wrap{% if resident_form.contact_number.errors %} field-error{% endif %}">
+                        <label for="{{ resident_form.contact_number.id_for_label }}">{{ resident_form.contact_number.label }}</label>
+                        <div class="field-icon-wrap">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M22 16.9v3a2 2 0 0 1-2.2 2A19.8 19.8 0 0 1 11.2 19a19.4 19.4 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4 2h3a2 2 0 0 1 2 1.7l.5 2.7a2 2 0 0 1-.6 1.8L7.7 9.3a16 16 0 0 0 7 7l1.1-1.2a2 2 0 0 1 1.8-.6l2.7.5A2 2 0 0 1 22 16.9z"></path>
+                            </svg>
+                            {{ resident_form.contact_number }}
+                        </div>
+                        {% if resident_form.contact_number.errors %}
+                            <div class="field-errors inline">{{ resident_form.contact_number.errors|striptags }}</div>
+                        {% endif %}
+                    </div>
+
+                    {% for field in resident_form %}
+                        {% if field.name != 'first_name' and field.name != 'last_name' and field.name != 'household_number' and field.name != 'gender' and field.name != 'age' and field.name != 'date_of_birth' and field.name != 'place_of_birth' and field.name != 'address' and field.name != 'contact_number' %}
+                            <div class="field-wrap{% if field.errors %} field-error{% endif %}">
+                                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                                {{ field }}
+                                {% if field.errors %}
+                                    <div class="field-errors inline">{{ field.errors|striptags }}</div>
+                                {% endif %}
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </article>
+        </div>
+
+        <div class="settings-foot">
+            <p class="settings-foot-note">Changes are saved to your profile and reflected across the system.</p>
+            <div class="settings-foot-actions">
+                <button type="button" class="cancel-btn" id="settings-cancel-btn" style="display:none;">Cancel</button>
+                <button type="submit" class="update-btn" id="settings-update-btn" style="display:none;">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M4 4h13l3 3v13H4z"></path>
+                        <path d="M8 4v6h8V4"></path>
+                        <path d="M8 20v-6h8v6"></path>
+                    </svg>
+                    <span>Update</span>
+                </button>
+            </div>
+        </div>
+    </form>
+</section>
+
+<script>
+    (function () {
+        const form = document.querySelector('.settings-page form');
+        if (!form) return;
+
+        const editBtn = document.getElementById('edit-profile-btn');
+        const cancelBtn = document.getElementById('settings-cancel-btn');
+        const updateBtn = document.getElementById('settings-update-btn');
+        const input = document.getElementById('{{ profile_form.profile_picture.id_for_label }}');
+        const trigger = document.getElementById('profile-upload-trigger');
+        const deleteBtn = document.getElementById('profile-delete-btn');
+        const clearInput = document.getElementById('{{ profile_form.profile_picture.html_name }}-clear_id');
+        const wrap = document.getElementById('profile-picture-wrap');
+        const preview = document.getElementById('profile-picture-preview');
+        const fallback = document.getElementById('profile-fallback-avatar');
+        const hasServerErrors = {% if user_form.errors or resident_form.errors or profile_form.errors or user_form.non_field_errors or resident_form.non_field_errors or profile_form.non_field_errors %}true{% else %}false{% endif %};
+
+        const editableFields = Array.from(form.querySelectorAll('input, select, textarea')).filter((field) => {
+            if (field.type === 'hidden') return false;
+            if (field === updateBtn || field === cancelBtn) return false;
+            return true;
+        });
+
+        const initialFieldState = new Map();
+        editableFields.forEach((field) => {
+            if (field.type === 'checkbox' || field.type === 'radio') {
+                initialFieldState.set(field, field.checked);
+                return;
+            }
+            if (field.type === 'file') {
+                initialFieldState.set(field, '');
+                return;
+            }
+            initialFieldState.set(field, field.value);
+        });
+
+        const initialHasImage = !!(preview && preview.getAttribute('src'));
+        const initialImageSrc = preview ? preview.getAttribute('src') : '';
+        const initialClearState = clearInput ? clearInput.checked : false;
+
+        function setEditMode(isEditing) {
+            editableFields.forEach((field) => {
+                field.disabled = !isEditing;
+            });
+            if (trigger) {
+                trigger.disabled = !isEditing;
+            }
+            if (deleteBtn) {
+                deleteBtn.disabled = !isEditing;
+            }
+            if (editBtn) {
+                editBtn.style.display = isEditing ? 'none' : '';
+            }
+            if (cancelBtn) {
+                cancelBtn.style.display = isEditing ? '' : 'none';
+            }
+            if (updateBtn) {
+                updateBtn.style.display = isEditing ? '' : 'none';
+                updateBtn.disabled = !isEditing;
+            }
+        }
+
+        function restoreInitialValues() {
+            editableFields.forEach((field) => {
+                if (field.type === 'checkbox' || field.type === 'radio') {
+                    field.checked = !!initialFieldState.get(field);
+                    return;
+                }
+                if (field.type === 'file') {
+                    field.value = '';
+                    return;
+                }
+                field.value = initialFieldState.get(field);
+            });
+
+            if (clearInput) {
+                clearInput.checked = initialClearState;
+            }
+            if (wrap) {
+                wrap.style.display = initialHasImage ? 'block' : 'none';
+            }
+            if (preview) {
+                preview.src = initialImageSrc || '';
+            }
+            if (fallback) {
+                fallback.style.display = initialHasImage ? 'none' : 'flex';
+            }
+        }
+
+        if (editBtn) {
+            editBtn.addEventListener('click', function () {
+                setEditMode(true);
+            });
+        }
+
+        if (cancelBtn) {
+            cancelBtn.addEventListener('click', function () {
+                restoreInitialValues();
+                setEditMode(false);
+            });
+        }
+
+        if (input && trigger) {
+            trigger.addEventListener('click', function () {
+                if (trigger.disabled) return;
+                input.click();
+            });
+        }
+
+        if (input) {
+            input.addEventListener('change', function (event) {
+                const file = event.target.files && event.target.files[0];
+                if (!file || !file.type.startsWith('image/')) return;
+                if (preview) {
+                    preview.src = URL.createObjectURL(file);
+                }
+                if (wrap) {
+                    wrap.style.display = 'block';
+                }
+                if (fallback) {
+                    fallback.style.display = 'none';
+                }
+                if (clearInput) {
+                    clearInput.checked = false;
+                }
+            });
+        }
+
+        if (deleteBtn && clearInput && input) {
+            deleteBtn.addEventListener('click', function () {
+                if (deleteBtn.disabled) return;
+                clearInput.checked = true;
+                input.value = '';
+                if (wrap) {
+                    wrap.style.display = 'none';
+                }
+                if (fallback) {
+                    fallback.style.display = 'flex';
+                }
+            });
+        }
+
+        setEditMode(hasServerErrors);
+    })();
+</script>
+{% endblock %}

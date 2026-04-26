@@ -1,0 +1,13 @@
+Hello {{ resident_name }},
+
+We received your payment submission in Purok Management System.
+
+Fee type: {{ fee_type }}
+Amount sent: {{ amount }}
+GCash reference: {{ gcash_reference }}
+Payment date: {{ payment_date|date:"Y-m-d" }}
+Status: Pending admin review
+
+We will send another email after an admin approves or rejects it.
+
+If this was not you, please contact the admin immediately.

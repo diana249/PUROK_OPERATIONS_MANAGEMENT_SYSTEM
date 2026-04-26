@@ -1,0 +1,22 @@
+{% extends 'management/base.html' %}
+
+{% block content %}
+<section class="panel">
+    <div class="section-head">
+        <div>
+            <h2>Delete Resident</h2>
+            <p>This action cannot be undone.</p>
+        </div>
+    </div>
+
+    <p>Are you sure you want to delete <strong>{{ resident.first_name }} {{ resident.last_name }}</strong>?</p>
+
+    <form method="post">
+        {% csrf_token %}
+        <div class="form-actions">
+            <button type="submit" class="btn btn-danger">Yes, Delete</button>
+            <a href="{% url 'resident-list' %}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</section>
+{% endblock %}

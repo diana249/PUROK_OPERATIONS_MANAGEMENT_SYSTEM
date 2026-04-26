@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: purok-system
+    env: python
+    plan: free
+    buildCommand: "./build.sh"
+    startCommand: "gunicorn purok_system.wsgi:application"
+    healthCheckPath: "/healthz/"
+    envVars:
+      - key: DJANGO_ENV
+        value: "production"
+      - key: DEBUG
+        value: "0"
+      - key: ALLOWED_HOSTS
+        value: ".onrender.com"
+      - key: CSRF_TRUSTED_ORIGINS
+        value: "https://*.onrender.com"
+      - key: SECURE_SSL_REDIRECT
+        value: "1"
+      - key: SECURE_HSTS_SECONDS
+        value: "31536000"
+      - key: SECURE_HSTS_INCLUDE_SUBDOMAINS
+        value: "1"
+      - key: SECURE_HSTS_PRELOAD
+        value: "1"
+      - key: LOG_LEVEL
+        value: "INFO"
+      - key: SECRET_KEY
+        generateValue: true
