@@ -14,6 +14,9 @@ class ResidentSerializer(serializers.ModelSerializer):
             "last_name",
             "purok",
             "purok_name",
+            "barangay",
+            "city",
+            "province",
             "date_of_birth",
             "contact_number",
         ]

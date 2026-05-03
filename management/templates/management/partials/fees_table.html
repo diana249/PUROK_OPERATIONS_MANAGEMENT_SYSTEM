@@ -15,13 +15,13 @@
             <tbody>
                 {% for fee in fees %}
                 <tr>
-                    {% if request.user.is_staff %}<td>{{ fee.resident.first_name }} {{ fee.resident.last_name }}</td>{% endif %}
-                    <td>{{ fee.amount }}</td>
-                    <td>{{ fee.fee_type }}</td>
-                    <td>{% if fee.paid %}<span class="badge badge-success">Paid</span>{% else %}<span class="badge badge-danger">Unpaid</span>{% endif %}</td>
-                    <td>{{ fee.date_paid|default:"-" }}</td>
+                    {% if request.user.is_staff %}<td data-label="Resident">{{ fee.resident.first_name }} {{ fee.resident.last_name }}</td>{% endif %}
+                    <td data-label="Amount">{{ fee.amount }}</td>
+                    <td data-label="Type">{{ fee.fee_type }}</td>
+                    <td data-label="Status">{% if fee.paid %}<span class="badge badge-success">Paid</span>{% else %}<span class="badge badge-danger">Unpaid</span>{% endif %}</td>
+                    <td data-label="Date Paid">{{ fee.date_paid|default:"-" }}</td>
                     {% if request.user.is_staff %}
-                    <td>
+                    <td data-label="Action">
                         <div style="display:flex;gap:6px;flex-wrap:wrap;">
                             <a class="btn btn-secondary" href="{% url 'fee-view-payment' fee.pk %}">View Payment</a>
                             {% if not fee.paid %}
@@ -33,7 +33,7 @@
                         </div>
                     </td>
                     {% else %}
-                    <td>
+                    <td data-label="Payment">
                         <div style="display:flex;gap:6px;flex-wrap:wrap;">
                             {% if fee.paid %}
                                 <a class="btn btn-secondary" href="{% url 'fee-view-payment' fee.pk %}">View Payment</a>

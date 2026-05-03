@@ -3,6 +3,7 @@ from django.contrib.auth import password_validation
 from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
+from django.db.models import Case, IntegerField, Value, When
 from django.utils.translation import gettext_lazy as _
 
 from .models import (
@@ -10,11 +11,27 @@ from .models import (
     Fee,
     PaymentTransaction,
     FeeType,
+    Purok,
     Profile,
     PurokClearance,
     Resident,
     VerificationCode,
 )
+
+STANDARD_PUROK_NAMES = [f"purok-{number}" for number in range(1, 16)]
+
+
+def _ensure_standard_puroks():
+    for purok_name in STANDARD_PUROK_NAMES:
+        Purok.objects.get_or_create(name=purok_name)
+    ordering = Case(
+        *[
+            When(name=purok_name, then=Value(position))
+            for position, purok_name in enumerate(STANDARD_PUROK_NAMES, start=1)
+        ],
+        output_field=IntegerField(),
+    )
+    return Purok.objects.filter(name__in=STANDARD_PUROK_NAMES).order_by(ordering)
 
 
 class ResidentForm(forms.ModelForm):
@@ -22,14 +39,24 @@ class ResidentForm(forms.ModelForm):
         model = Resident
         fields = [
             "first_name",
+            "middle_name",
             "last_name",
             "household_number",
             "gender",
+            "purok",
+            "sitio",
+            "barangay",
+            "city",
+            "province",
             "date_of_birth",
             "place_of_birth",
             "address",
             "contact_number",
         ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["purok"].queryset = _ensure_standard_puroks()
 
 class AttendanceForm(forms.ModelForm):
     class Meta:
@@ -139,15 +166,25 @@ class UserResidentInfoForm(forms.ModelForm):
         model = Resident
         fields = [
             "first_name",
+            "middle_name",
             "last_name",
             "household_number",
             "gender",
+            "purok",
+            "sitio",
+            "barangay",
+            "city",
+            "province",
             "age",
             "date_of_birth",
             "place_of_birth",
             "address",
             "contact_number",
         ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["purok"].queryset = _ensure_standard_puroks()
 
 
 class ForgotPasswordRequestForm(forms.Form):

@@ -22,6 +22,11 @@
 
         * { box-sizing: border-box; }
 
+        img, svg {
+            max-width: 100%;
+            height: auto;
+        }
+
         body {
             margin: 0;
             font-family: "DM Sans", sans-serif;
@@ -145,6 +150,34 @@
             flex: 0 0 auto;
             position: relative;
             box-shadow: 0 5px 14px rgba(22, 55, 67, 0.07);
+        }
+
+        .menu-toggle {
+            display: none;
+            border: 1px solid #b8ccc2;
+            background: #e4eee7;
+            color: #173744;
+            border-radius: 10px;
+            padding: 0;
+            width: 40px;
+            height: 40px;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 5px 14px rgba(22, 55, 67, 0.07);
+        }
+
+        .menu-toggle-lines {
+            display: inline-grid;
+            gap: 4px;
+        }
+
+        .menu-toggle-lines span {
+            width: 16px;
+            height: 2px;
+            border-radius: 999px;
+            background: currentColor;
+            display: block;
         }
 
         .role-pill {
@@ -823,6 +856,12 @@
         }
 
         @media (max-width: 600px) {
+            html,
+            body {
+                width: 100%;
+                max-width: 100%;
+                overflow-x: hidden;
+            }
             .topbar {
                 padding: 8px 9px;
             }
@@ -840,25 +879,119 @@
                 width: 100%;
             }
             .table-wrap {
-                margin: 0 -2px;
+                margin: 0;
                 padding-bottom: 2px;
             }
             table {
-                min-width: 500px;
+                min-width: 100%;
+            }
+            .attendance-page .attendance-table,
+            .accounts-page .accounts-table,
+            .info-page .info-table,
+            .fees-page .fees-table,
+            .clearance-page .clearance-table,
+            .residents-page .residents-table,
+            .pending-card .pending-table {
+                min-width: 100% !important;
             }
             th {
                 font-size: 0.76rem;
                 overflow-wrap: anywhere;
+                white-space: normal;
             }
             td {
                 font-size: 0.92rem;
                 padding: 10px 10px;
                 overflow-wrap: anywhere;
+                word-break: break-word;
             }
             .badge {
                 font-size: 0.76rem;
                 padding: 4px 10px;
                 white-space: nowrap;
+            }
+        }
+
+        @media (max-width: 600px) and (orientation: portrait) {
+            .topbar {
+                padding: 8px 8px 10px;
+            }
+            .topbar-inner {
+                gap: 8px;
+                align-items: center;
+            }
+            .brand {
+                font-size: 1.45rem;
+            }
+            .menu-toggle {
+                display: inline-flex;
+                margin-left: auto;
+            }
+            .top-actions {
+                width: 100%;
+                display: none;
+                gap: 8px;
+                position: relative;
+            }
+            .top-actions.menu-open {
+                display: flex;
+                flex-direction: column;
+                align-items: flex-end;
+                margin-top: 8px;
+            }
+            .top-nav {
+                display: none;
+            }
+            .top-actions.menu-open .top-nav {
+                display: grid;
+                order: 1;
+            }
+            .top-actions.menu-open .account-pill {
+                display: inline-flex;
+                order: 2;
+            }
+            .account-pill {
+                display: none;
+                width: min(290px, calc(100vw - 16px));
+                justify-content: flex-start;
+                padding: 8px 10px;
+                margin-top: 0;
+            }
+            .top-nav {
+                width: min(290px, calc(100vw - 16px));
+                grid-template-columns: 1fr;
+                gap: 7px;
+                overflow: visible;
+                padding: 10px;
+                border-radius: 14px;
+                border: 1px solid #b8ccc2;
+                background: #d7e4da;
+                box-shadow: 0 10px 24px rgba(20, 48, 60, 0.14);
+                position: static;
+                z-index: 75;
+            }
+            .nav-link {
+                width: 100%;
+                justify-content: flex-start;
+                gap: 6px;
+                padding: 9px 10px;
+                font-size: 0.84rem;
+                white-space: nowrap;
+                text-align: left;
+                min-height: 40px;
+            }
+            .nav-link span {
+                min-width: 0;
+            }
+            .feature-tabs,
+            .pending-tabs {
+                flex-direction: column;
+                gap: 10px;
+            }
+            .feature-tabs .btn,
+            .pending-tabs .btn {
+                flex: 1 1 100%;
+                width: 100%;
             }
         }
     </style>
@@ -868,8 +1001,18 @@
     <header class="topbar">
         <div class="topbar-inner">
             <a class="brand" href="{% url 'dashboard' %}">Purok<span class="brand-dot">.</span>System</a>
-            <div class="top-actions">
-            <nav class="top-nav">
+            <button
+                type="button"
+                class="menu-toggle"
+                id="mobile-menu-toggle"
+                aria-label="Toggle menu"
+                aria-expanded="false"
+                aria-controls="top-nav"
+            >
+                <span class="menu-toggle-lines" aria-hidden="true"><span></span><span></span><span></span></span>
+            </button>
+            <div class="top-actions" id="top-actions">
+            <nav class="top-nav" id="top-nav">
                 <a class="nav-link {% if current == 'dashboard' %}active{% endif %}" href="{% url 'dashboard' %}">
                     <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3 2.5 11h2V21h6v-6h3v6h6v-10h2L12 3z"/></svg>
                     <span>Home</span>
@@ -972,6 +1115,31 @@
         const accountMenu = document.getElementById("account-menu");
         const logoutBackdrop = document.getElementById("logout-backdrop");
         const logoutCancel = document.getElementById("logout-cancel");
+        const mobileMenuToggle = document.getElementById("mobile-menu-toggle");
+        const topActions = document.getElementById("top-actions");
+        if (mobileMenuToggle && topActions) {
+            const closeMenu = () => {
+                topActions.classList.remove("menu-open");
+                mobileMenuToggle.setAttribute("aria-expanded", "false");
+            };
+            mobileMenuToggle.addEventListener("click", () => {
+                const isOpen = topActions.classList.toggle("menu-open");
+                mobileMenuToggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+            });
+            document.querySelectorAll("#top-nav .nav-link").forEach((link) => {
+                link.addEventListener("click", closeMenu);
+            });
+            window.addEventListener("resize", () => {
+                if (window.innerWidth > 600) {
+                    closeMenu();
+                }
+            });
+            document.addEventListener("click", (event) => {
+                if (!topActions.contains(event.target) && !mobileMenuToggle.contains(event.target)) {
+                    closeMenu();
+                }
+            });
+        }
         if (accountTrigger && accountMenu) {
             accountTrigger.addEventListener("click", (event) => {
                 event.preventDefault();
@@ -1007,3 +1175,4 @@
 </script>
 </body>
 </html>
+

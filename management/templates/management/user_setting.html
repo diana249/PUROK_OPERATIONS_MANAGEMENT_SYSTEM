@@ -286,8 +286,21 @@
         grid-template-columns: 1fr 1fr;
         gap: 10px;
     }
+    .fields-grid-3 {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 10px;
+    }
     .field-wrap {
         margin-top: 9px;
+    }
+    .section-label {
+        margin: 14px 0 2px;
+        font-size: 0.78rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #2e5663;
     }
     .field-wrap label {
         margin-bottom: 5px;
@@ -396,7 +409,21 @@
             flex-direction: column;
             align-items: flex-start;
         }
+        .settings-head-actions {
+            width: 100%;
+            display: grid;
+            gap: 10px;
+        }
+        .settings-head-actions .edit-profile-btn,
+        .settings-head-actions .password-btn {
+            width: 100%;
+            justify-content: center;
+        }
         .fields-grid-2 {
+            grid-template-columns: 1fr;
+            gap: 0;
+        }
+        .fields-grid-3 {
             grid-template-columns: 1fr;
             gap: 0;
         }
@@ -409,6 +436,80 @@
             flex-direction: column;
             align-items: flex-start;
             padding: 14px;
+        }
+        .settings-foot-actions {
+            width: 100%;
+        }
+        .settings-foot-actions .update-btn,
+        .settings-foot-actions .cancel-btn {
+            width: 100%;
+            justify-content: center;
+            text-align: center;
+        }
+    }
+    @media (max-width: 600px) {
+        html,
+        body {
+            overflow-x: hidden;
+        }
+        .shell,
+        .page,
+        .panel,
+        .settings-page,
+        .settings-card {
+            width: 100%;
+            max-width: 100%;
+            min-width: 0;
+        }
+        .settings-page {
+            padding: 8px 6px 12px;
+        }
+        .settings-head,
+        .settings-head > div,
+        .settings-head-actions,
+        .profile-body,
+        .profile-actions,
+        .settings-fields,
+        .settings-foot,
+        .settings-foot-actions {
+            width: 100%;
+            max-width: 100%;
+            min-width: 0;
+        }
+        .settings-head-actions .edit-profile-btn,
+        .settings-head-actions .password-btn,
+        .settings-foot-actions .update-btn,
+        .settings-foot-actions .cancel-btn,
+        .profile-upload-btn {
+            width: 100%;
+            max-width: 100%;
+        }
+        .field-wrap input,
+        .field-wrap select,
+        .field-wrap textarea {
+            max-width: 100%;
+        }
+        .settings-title {
+            font-size: 2rem;
+            line-height: 1.03;
+        }
+        .settings-subtitle {
+            font-size: 1.02rem;
+            line-height: 1.35;
+        }
+        .settings-card {
+            border-radius: 12px;
+        }
+        .card-head h3,
+        .profile-actions h4 {
+            font-size: 1.05rem;
+        }
+        .profile-body {
+            gap: 14px;
+        }
+        .profile-actions p {
+            margin-bottom: 12px;
+            font-size: 0.95rem;
         }
     }
 </style>
@@ -597,12 +698,20 @@
                     <p class="info-subtitle">Linked to your resident record in the purok directory.</p>
                 </div>
                 <div class="settings-fields">
-                    <div class="fields-grid-2">
+                    <p class="section-label">Identity</p>
+                    <div class="fields-grid-3">
                         <div class="field-wrap{% if resident_form.first_name.errors %} field-error{% endif %}">
                             <label for="{{ resident_form.first_name.id_for_label }}">{{ resident_form.first_name.label }}</label>
                             {{ resident_form.first_name }}
                             {% if resident_form.first_name.errors %}
                                 <div class="field-errors inline">{{ resident_form.first_name.errors|striptags }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="field-wrap{% if resident_form.middle_name.errors %} field-error{% endif %}">
+                            <label for="{{ resident_form.middle_name.id_for_label }}">{{ resident_form.middle_name.label }}</label>
+                            {{ resident_form.middle_name }}
+                            {% if resident_form.middle_name.errors %}
+                                <div class="field-errors inline">{{ resident_form.middle_name.errors|striptags }}</div>
                             {% endif %}
                         </div>
                         <div class="field-wrap{% if resident_form.last_name.errors %} field-error{% endif %}">
@@ -614,6 +723,7 @@
                         </div>
                     </div>
 
+                    <p class="section-label">Household Details</p>
                     <div class="fields-grid-2">
                         <div class="field-wrap{% if resident_form.household_number.errors %} field-error{% endif %}">
                             <label for="{{ resident_form.household_number.id_for_label }}">{{ resident_form.household_number.label }}</label>
@@ -639,6 +749,57 @@
                         {% endif %}
                     </div>
 
+                    <p class="section-label">Address Details</p>
+                    <div class="fields-grid-2">
+                        <div class="field-wrap{% if resident_form.purok.errors %} field-error{% endif %}">
+                            <label for="{{ resident_form.purok.id_for_label }}">{{ resident_form.purok.label }}</label>
+                            {{ resident_form.purok }}
+                            {% if resident_form.purok.errors %}
+                                <div class="field-errors inline">{{ resident_form.purok.errors|striptags }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="field-wrap{% if resident_form.barangay.errors %} field-error{% endif %}">
+                            <label for="{{ resident_form.barangay.id_for_label }}">{{ resident_form.barangay.label }}</label>
+                            {{ resident_form.barangay }}
+                            {% if resident_form.barangay.errors %}
+                                <div class="field-errors inline">{{ resident_form.barangay.errors|striptags }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="fields-grid-2">
+                        <div class="field-wrap{% if resident_form.sitio.errors %} field-error{% endif %}">
+                            <label for="{{ resident_form.sitio.id_for_label }}">{{ resident_form.sitio.label }}</label>
+                            {{ resident_form.sitio }}
+                            {% if resident_form.sitio.errors %}
+                                <div class="field-errors inline">{{ resident_form.sitio.errors|striptags }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="field-wrap{% if resident_form.city.errors %} field-error{% endif %}">
+                            <label for="{{ resident_form.city.id_for_label }}">{{ resident_form.city.label }}</label>
+                            {{ resident_form.city }}
+                            {% if resident_form.city.errors %}
+                                <div class="field-errors inline">{{ resident_form.city.errors|striptags }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="field-wrap{% if resident_form.province.errors %} field-error{% endif %}">
+                            <label for="{{ resident_form.province.id_for_label }}">{{ resident_form.province.label }}</label>
+                            {{ resident_form.province }}
+                            {% if resident_form.province.errors %}
+                                <div class="field-errors inline">{{ resident_form.province.errors|striptags }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="field-wrap{% if resident_form.address.errors %} field-error{% endif %}">
+                        <label for="{{ resident_form.address.id_for_label }}">{{ resident_form.address.label }}</label>
+                        {{ resident_form.address }}
+                        {% if resident_form.address.errors %}
+                            <div class="field-errors inline">{{ resident_form.address.errors|striptags }}</div>
+                        {% endif %}
+                    </div>
+
+                    <p class="section-label">Birth and Contact</p>
                     <div class="field-wrap{% if resident_form.date_of_birth.errors %} field-error{% endif %}">
                         <label for="{{ resident_form.date_of_birth.id_for_label }}">{{ resident_form.date_of_birth.label }}</label>
                         <div class="field-icon-wrap">
@@ -661,14 +822,6 @@
                         {% endif %}
                     </div>
 
-                    <div class="field-wrap{% if resident_form.address.errors %} field-error{% endif %}">
-                        <label for="{{ resident_form.address.id_for_label }}">{{ resident_form.address.label }}</label>
-                        {{ resident_form.address }}
-                        {% if resident_form.address.errors %}
-                            <div class="field-errors inline">{{ resident_form.address.errors|striptags }}</div>
-                        {% endif %}
-                    </div>
-
                     <div class="field-wrap{% if resident_form.contact_number.errors %} field-error{% endif %}">
                         <label for="{{ resident_form.contact_number.id_for_label }}">{{ resident_form.contact_number.label }}</label>
                         <div class="field-icon-wrap">
@@ -683,7 +836,7 @@
                     </div>
 
                     {% for field in resident_form %}
-                        {% if field.name != 'first_name' and field.name != 'last_name' and field.name != 'household_number' and field.name != 'gender' and field.name != 'age' and field.name != 'date_of_birth' and field.name != 'place_of_birth' and field.name != 'address' and field.name != 'contact_number' %}
+                        {% if field.name != 'first_name' and field.name != 'middle_name' and field.name != 'last_name' and field.name != 'household_number' and field.name != 'gender' and field.name != 'purok' and field.name != 'sitio' and field.name != 'barangay' and field.name != 'city' and field.name != 'province' and field.name != 'age' and field.name != 'date_of_birth' and field.name != 'place_of_birth' and field.name != 'address' and field.name != 'contact_number' %}
                             <div class="field-wrap{% if field.errors %} field-error{% endif %}">
                                 <label for="{{ field.id_for_label }}">{{ field.label }}</label>
                                 {{ field }}
@@ -753,6 +906,35 @@
         const initialHasImage = !!(preview && preview.getAttribute('src'));
         const initialImageSrc = preview ? preview.getAttribute('src') : '';
         const initialClearState = clearInput ? clearInput.checked : false;
+        const purokField = document.getElementById('id_purok');
+        const sitioField = document.getElementById('id_sitio');
+        const barangayField = document.getElementById('id_barangay');
+        const cityField = document.getElementById('id_city');
+        const provinceField = document.getElementById('id_province');
+        const addressField = document.getElementById('id_address');
+        if (addressField) {
+            addressField.readOnly = true;
+        }
+
+        function syncAddressFromLocation() {
+            if (!addressField) return;
+
+            const purokText = purokField
+                ? (purokField.tagName === 'SELECT'
+                    ? (purokField.options[purokField.selectedIndex]?.text || '')
+                    : purokField.value)
+                : '';
+            const sitioText = sitioField ? sitioField.value : '';
+            const barangayText = barangayField ? barangayField.value : '';
+            const cityText = cityField ? cityField.value : '';
+            const provinceText = provinceField ? provinceField.value : '';
+
+            const addressParts = [purokText, sitioText, barangayText, cityText, provinceText]
+                .map((part) => (part || '').trim())
+                .filter(Boolean);
+
+            addressField.value = addressParts.join(', ');
+        }
 
         function setEditMode(isEditing) {
             editableFields.forEach((field) => {
@@ -788,6 +970,7 @@
                 }
                 field.value = initialFieldState.get(field);
             });
+            syncAddressFromLocation();
 
             if (clearInput) {
                 clearInput.checked = initialClearState;
@@ -855,6 +1038,15 @@
                 }
             });
         }
+
+        [purokField, sitioField, barangayField, cityField, provinceField]
+            .filter(Boolean)
+            .forEach((field) => {
+                field.addEventListener('input', syncAddressFromLocation);
+                field.addEventListener('change', syncAddressFromLocation);
+            });
+
+        syncAddressFromLocation();
 
         setEditMode(hasServerErrors);
     })();

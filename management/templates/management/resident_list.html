@@ -84,6 +84,10 @@
             <thead>
                 <tr>
                     <th>Name</th>
+                    <th>Purok</th>
+                    <th>Barangay</th>
+                    <th>City</th>
+                    <th>Province</th>
                     <th>Household Number</th>
                     <th>Gender</th>
                     <th>Place of Birth</th>
@@ -97,6 +101,10 @@
                 {% for resident in residents %}
                 <tr>
                     <td>{{ resident.first_name }} {{ resident.last_name }}</td>
+                    <td>{{ resident.purok }}</td>
+                    <td>{{ resident.barangay|default:"-" }}</td>
+                    <td>{{ resident.city|default:"-" }}</td>
+                    <td>{{ resident.province|default:"-" }}</td>
                     <td>{{ resident.household_number|default:"-" }}</td>
                     <td>{{ resident.gender|default:"-" }}</td>
                     <td>{{ resident.place_of_birth|default:"-" }}</td>
@@ -110,7 +118,7 @@
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="8">No residents found.</td>
+                    <td colspan="12">No residents found.</td>
                 </tr>
                 {% endfor %}
             </tbody>

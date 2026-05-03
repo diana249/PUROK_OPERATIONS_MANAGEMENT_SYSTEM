@@ -52,10 +52,15 @@ class Resident(models.Model):
         related_name="resident_profile",
     )
     first_name = models.CharField(max_length=100)
+    middle_name = models.CharField(max_length=100, blank=True, default="")
     last_name = models.CharField(max_length=100)
     household_number = models.CharField(max_length=50, blank=True, default="")
     gender = models.CharField(max_length=20, blank=True, default="")
     purok = models.ForeignKey(Purok, on_delete=models.PROTECT, related_name="residents")
+    sitio = models.CharField(max_length=100, blank=True, default="")
+    barangay = models.CharField(max_length=100, blank=True, default="")
+    city = models.CharField(max_length=100, blank=True, default="")
+    province = models.CharField(max_length=100, blank=True, default="")
     age = models.PositiveIntegerField(blank=True, null=True)
     date_of_birth = models.DateField()
     place_of_birth = models.CharField(max_length=255, blank=True, default="")
@@ -187,6 +192,7 @@ class PurokClearance(models.Model):
         related_name="clearances",
     )
     remarks = models.TextField(blank=True)
+    resident_downloaded_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         indexes = [

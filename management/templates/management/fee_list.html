@@ -64,6 +64,153 @@
         font-size: 0.82rem;
         font-weight: 800;
     }
+
+    .fees-tabs-toggle {
+        display: none;
+        border: 1px solid #aac5b8;
+        background: #dbe6dd;
+        color: #1d4b5f;
+        border-radius: 10px;
+        padding: 0;
+        width: 40px;
+        height: 40px;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 5px 14px rgba(22, 55, 67, 0.07);
+    }
+
+    .fees-tabs-toggle-lines {
+        display: inline-grid;
+        gap: 4px;
+    }
+
+    .fees-tabs-toggle-lines span {
+        width: 16px;
+        height: 2px;
+        border-radius: 999px;
+        background: currentColor;
+        display: block;
+    }
+
+    @media (max-width: 600px) and (orientation: portrait) {
+        .fees-page {
+            position: relative;
+        }
+        .fees-page .section-head {
+            padding-right: 56px;
+        }
+        .fees-tabs-menu {
+            position: absolute;
+            top: 20px;
+            right: 14px;
+            display: flex;
+            justify-content: flex-end;
+            margin: 0;
+            z-index: 35;
+        }
+        .fees-tabs-toggle {
+            display: inline-flex;
+        }
+        .fees-page .feature-tabs {
+            display: none;
+            margin: 0;
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            width: min(280px, calc(100vw - 24px));
+            z-index: 25;
+            border: 1px solid #b7cfc0;
+            border-radius: 14px;
+            background: #d5dfd7;
+            padding: 10px;
+            box-shadow: 0 10px 24px rgba(20, 48, 60, 0.14);
+            flex-direction: column;
+            gap: 8px;
+        }
+        .fees-tabs-menu.open .feature-tabs {
+            display: flex;
+        }
+        .fees-page .feature-tabs .btn {
+            width: 100%;
+            justify-content: flex-start;
+            padding: 0 12px;
+            min-height: 42px;
+        }
+        .fees-page .fees-table {
+            width: 100%;
+            min-width: 100% !important;
+            border-spacing: 0;
+        }
+        .fees-page .table-wrap {
+            overflow: visible;
+            padding-bottom: 0;
+        }
+        .fees-page .fees-table thead {
+            display: none;
+        }
+        .fees-page .fees-table tbody {
+            display: grid;
+            gap: 10px;
+        }
+        .fees-page .fees-table tbody tr {
+            display: grid;
+            gap: 6px;
+            padding: 10px;
+            border: 1px solid #b3c9bc;
+            border-radius: 14px;
+            background: #edf4ee;
+        }
+        .fees-page .fees-table td {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 10px;
+            border: 0;
+            background: transparent;
+            padding: 0;
+            font-size: 0.8rem;
+            line-height: 1.25;
+            white-space: normal;
+            overflow-wrap: anywhere;
+        }
+        .fees-page .fees-table td::before {
+            content: attr(data-label);
+            font-weight: 800;
+            color: #2f5967;
+            font-size: 0.72rem;
+            letter-spacing: 0.3px;
+            text-transform: uppercase;
+            flex: 0 0 42%;
+            max-width: 42%;
+        }
+        .fees-page .fees-table td > * {
+            margin-left: auto;
+            text-align: right;
+            max-width: 58%;
+        }
+        .fees-page .fees-table td[colspan] {
+            display: block;
+            text-align: left;
+            font-weight: 700;
+            padding: 4px 0;
+        }
+        .fees-page .fees-table td[colspan]::before {
+            content: none;
+        }
+        .fees-page .fees-table td .btn {
+            min-height: 30px;
+            padding: 4px 8px;
+            font-size: 0.72rem;
+            white-space: nowrap;
+        }
+        .fees-page .fees-table .badge {
+            min-width: 70px;
+            justify-content: center;
+            padding: 4px 8px;
+            font-size: 0.72rem;
+        }
+    }
 </style>
 
 <section class="panel feature-fees fees-page">
@@ -77,12 +224,24 @@
         {% endif %}
     </div>
 
-    <div class="feature-tabs">
-        <a class="btn {% if fee_tab == 'meeting' %}btn-primary{% else %}btn-secondary{% endif %}" href="{% url 'fee-list' %}?tab=meeting">Fee for Missed Meetings</a>
-        <a class="btn {% if fee_tab == 'cleaning' %}btn-primary{% else %}btn-secondary{% endif %}" href="{% url 'fee-list' %}?tab=cleaning">Fee for Missed Cleaning</a>
-        {% if request.user.is_staff %}
-        <a class="btn {% if fee_tab == 'all' %}btn-primary{% else %}btn-secondary{% endif %}" href="{% url 'fee-list' %}?tab=all">All Fees</a>
-        {% endif %}
+    <div class="fees-tabs-menu" id="fees-tabs-menu">
+        <button
+            type="button"
+            class="fees-tabs-toggle"
+            id="fees-tabs-toggle"
+            aria-label="Toggle fees menu"
+            aria-expanded="false"
+            aria-controls="fees-feature-tabs"
+        >
+            <span class="fees-tabs-toggle-lines" aria-hidden="true"><span></span><span></span><span></span></span>
+        </button>
+        <div class="feature-tabs" id="fees-feature-tabs">
+            <a class="btn {% if fee_tab == 'meeting' %}btn-primary{% else %}btn-secondary{% endif %}" href="{% url 'fee-list' %}?tab=meeting">Fee for Missed Meetings</a>
+            <a class="btn {% if fee_tab == 'cleaning' %}btn-primary{% else %}btn-secondary{% endif %}" href="{% url 'fee-list' %}?tab=cleaning">Fee for Missed Cleaning</a>
+            {% if request.user.is_staff %}
+            <a class="btn {% if fee_tab == 'all' %}btn-primary{% else %}btn-secondary{% endif %}" href="{% url 'fee-list' %}?tab=all">All Fees</a>
+            {% endif %}
+        </div>
     </div>
 
     {% if fee_tab == 'cleaning' %}
@@ -111,4 +270,38 @@
         {% endwith %}
     {% endif %}
 </section>
+<script>
+    (function () {
+        const menu = document.getElementById("fees-tabs-menu");
+        const toggle = document.getElementById("fees-tabs-toggle");
+        if (!menu || !toggle) return;
+
+        const closeMenu = () => {
+            menu.classList.remove("open");
+            toggle.setAttribute("aria-expanded", "false");
+        };
+
+        toggle.addEventListener("click", () => {
+            const isOpen = menu.classList.toggle("open");
+            toggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+        });
+
+        menu.querySelectorAll(".feature-tabs .btn").forEach((link) => {
+            link.addEventListener("click", closeMenu);
+        });
+
+        document.addEventListener("click", (event) => {
+            if (!menu.contains(event.target)) {
+                closeMenu();
+            }
+        });
+
+        window.addEventListener("resize", () => {
+            if (window.innerWidth > 600) {
+                closeMenu();
+            }
+        });
+    })();
+</script>
 {% endblock %}
+

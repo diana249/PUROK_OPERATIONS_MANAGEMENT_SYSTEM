@@ -1,5 +1,7 @@
 from html import escape
+from io import BytesIO
 import logging
+from pathlib import Path
 
 from django.conf import settings
 from django.contrib import messages
@@ -297,6 +299,9 @@ def resident_list(request):
             Q(first_name__icontains=query)
             | Q(last_name__icontains=query)
             | Q(purok__name__icontains=query)
+            | Q(barangay__icontains=query)
+            | Q(city__icontains=query)
+            | Q(province__icontains=query)
         )
 
     paginator = Paginator(residents, 10)
@@ -320,6 +325,9 @@ def resident_export_word(request):
             Q(first_name__icontains=query)
             | Q(last_name__icontains=query)
             | Q(purok__name__icontains=query)
+            | Q(barangay__icontains=query)
+            | Q(city__icontains=query)
+            | Q(province__icontains=query)
         )
 
     table_rows = "".join(
@@ -327,6 +335,9 @@ def resident_export_word(request):
             "<tr>"
             f"<td>{escape(resident.first_name)} {escape(resident.last_name)}</td>"
             f"<td>{escape(str(resident.purok))}</td>"
+            f"<td>{escape(resident.barangay or '-')}</td>"
+            f"<td>{escape(resident.city or '-')}</td>"
+            f"<td>{escape(resident.province or '-')}</td>"
             f"<td>{escape(resident.date_of_birth.strftime('%Y-%m-%d'))}</td>"
             f"<td>{escape(resident.contact_number or '-')}</td>"
             "</tr>"
@@ -334,7 +345,7 @@ def resident_export_word(request):
         for resident in residents
     )
     if not table_rows:
-        table_rows = '<tr><td colspan="4">No residents found.</td></tr>'
+        table_rows = '<tr><td colspan="7">No residents found.</td></tr>'
 
     html = f"""
     <html>
@@ -346,6 +357,9 @@ def resident_export_word(request):
                 <tr>
                     <th>Name</th>
                     <th>Purok</th>
+                    <th>Barangay</th>
+                    <th>City</th>
+                    <th>Province</th>
                     <th>Date of Birth</th>
                     <th>Contact Number</th>
                 </tr>
@@ -690,45 +704,174 @@ def clearance_download(request, pk):
         if resident is None or clearance.resident_id != resident.id:
             messages.error(request, "You are not allowed to download this clearance.")
             return redirect("clearance-list")
+        if clearance.resident_downloaded_at is not None:
+            messages.error(request, "This clearance can only be downloaded once.")
+            return redirect("clearance-list")
 
-    resident_name = escape(f"{clearance.resident.first_name} {clearance.resident.last_name}")
-    clearance_type = escape(clearance.clearance_type.name)
-    if clearance_type.strip().lower() == "barangay":
-        clearance_type = "Purok Clearance"
-    date_issued = escape(clearance.date_issued.strftime("%B %d, %Y"))
-    remarks = escape(clearance.remarks or "-")
+    resident = clearance.resident
+    middle_name = (resident.middle_name or "").strip()
+    resident_name = f"{resident.first_name} {middle_name} {resident.last_name}".replace("  ", " ").strip()
+    age_text = str(resident.age) if resident.age is not None else "___"
+    purok_text = resident.purok.name if resident.purok_id else "___"
+    sitio_text = (resident.address or "").strip() or "___________"
+    barangay_text = (resident.barangay.strip() or "Barangay Mat-I")
+    city_text = (resident.city.strip() or "Surigao City")
+    province_text = (resident.province.strip() or "Surigao del Norte")
+    issued_day = str(clearance.date_issued.day)
+    issued_month = clearance.date_issued.strftime("%B")
+    issued_year_words = "Two Thousand Twenty-Six" if clearance.date_issued.year == 2026 else str(clearance.date_issued.year)
 
-    html = f"""
-    <html>
-    <head>
-        <meta charset="utf-8">
-        <title>Purok Clearance</title>
-        <style>
-            body {{ font-family: Arial, sans-serif; margin: 36px; color: #1a2b33; }}
-            .content {{ border: 1px solid #c8d7de; padding: 18px; border-radius: 8px; }}
-            .line {{ margin-bottom: 12px; }}
-            .label {{ font-weight: bold; }}
-            .footer {{ margin-top: 44px; }}
-            .sign {{ margin-top: 52px; border-top: 1px solid #6b7c86; width: 260px; padding-top: 6px; }}
-        </style>
-    </head>
-    <body>
-        <div class="content">
-            <div class="line"><span class="label">Resident Name:</span> {resident_name}</div>
-            <div class="line"><span class="label">Clearance Type:</span> {clearance_type}</div>
-            <div class="line"><span class="label">Date Issued:</span> {date_issued}</div>
-        </div>
+    try:
+        from reportlab.lib.pagesizes import A4
+        from reportlab.lib.utils import ImageReader
+        from reportlab.pdfbase import pdfmetrics
+        from reportlab.pdfbase.ttfonts import TTFont
+        from reportlab.pdfgen import canvas
+    except ImportError:
+        messages.error(request, "PDF engine is not installed yet. Please install reportlab first.")
+        return redirect("clearance-list")
 
-        <p style="margin-top:28px;">This certifies that the person named above is issued this clearance based on the current records.</p>
+    def find_logo_path(filename):
+        logos_dir = settings.BASE_DIR / "static" / "logos"
+        if not logos_dir.exists():
+            return None
+        for candidate in logos_dir.glob(f"{filename}*"):
+            if candidate.suffix.lower() in {".png", ".jpg", ".jpeg"}:
+                return Path(candidate)
+        return None
 
-        <div class="footer">
-            <div class="sign">Authorized Signature</div>
-        </div>
-    </body>
-    </html>
-    """
-    response = HttpResponse(html, content_type="application/msword")
-    response["Content-Disposition"] = f'attachment; filename="purok_clearance_{clearance.pk}.doc"'
+    def draw_wrapped_text(pdf, text, x, y, max_width, font_name="Arial", font_size=11, leading=16):
+        words = text.split()
+        if not words:
+            return y
+        line = words[0]
+        for word in words[1:]:
+            trial = f"{line} {word}"
+            if pdf.stringWidth(trial, font_name, font_size) <= max_width:
+                line = trial
+            else:
+                pdf.drawString(x, y, line)
+                y -= leading
+                line = word
+        pdf.drawString(x, y, line)
+        return y - leading
+
+    def draw_rotated_logo(pdf, image_path, x, y, size, angle_degrees):
+        pdf.saveState()
+        center_x = x + (size / 2)
+        center_y = y + (size / 2)
+        pdf.translate(center_x, center_y)
+        pdf.rotate(angle_degrees)
+        pdf.drawImage(
+            ImageReader(str(image_path)),
+            -size / 2,
+            -size / 2,
+            width=size,
+            height=size,
+            preserveAspectRatio=True,
+            mask="auto",
+        )
+        pdf.restoreState()
+
+    pdf_buffer = BytesIO()
+    pdf = canvas.Canvas(pdf_buffer, pagesize=A4)
+    page_w, page_h = A4
+    margin_left = 72
+    margin_right = 72
+    content_w = page_w - margin_left - margin_right
+    top_y = page_h - 72
+
+    # Use Arial if available for closer parity with the old Word layout.
+    arial_registered = False
+    for arial_path in [
+        Path("C:/Windows/Fonts/arial.ttf"),
+        Path("C:/WINDOWS/Fonts/arial.ttf"),
+    ]:
+        if arial_path.exists():
+            pdfmetrics.registerFont(TTFont("Arial", str(arial_path)))
+            arial_registered = True
+            break
+    font_regular = "Arial" if arial_registered else "Helvetica"
+    font_bold = "Helvetica-Bold"
+
+    left_logo = find_logo_path("left_logo")
+    right_logo = find_logo_path("right_logo")
+    logo_size = 78
+    if left_logo:
+        draw_rotated_logo(
+            pdf,
+            left_logo,
+            margin_left + 52,
+            top_y - logo_size,
+            logo_size,
+            0.0,
+        )
+    if right_logo:
+        draw_rotated_logo(
+            pdf,
+            right_logo,
+            page_w - margin_right - logo_size - 52,
+            top_y - logo_size,
+            logo_size,
+            2.0,
+        )
+
+    center_x = page_w / 2
+    header_lines = [
+        ("Republic of the Philippines", False),
+        ("Province of Surigao del Norte", False),
+        ("City of Surigao", False),
+        ("Office of the Punong Barangay", True),
+        ("BARANGAY MAT-I", True),
+    ]
+    y = top_y - 2
+    for text, is_bold in header_lines:
+        pdf.setFont(font_bold if is_bold else font_regular, 11)
+        pdf.drawCentredString(center_x, y, text)
+        y -= 14
+
+    y -= 34
+    pdf.setFont(font_regular, 11)
+    pdf.drawString(margin_left, y, "TO WHOM IT MAY CONCERN:")
+    y -= 22
+
+    p1 = (
+        f"THIS IS TO CERTIFY THAT {resident_name}, is a {age_text} year of age, married, single, widow, Filipino citizen "
+        f"at residing at Purok {purok_text}, Sitio {sitio_text}, {barangay_text}, {city_text}, {province_text}."
+    )
+    y = draw_wrapped_text(pdf, p1, margin_left, y, content_w, font_name=font_regular)
+    y -= 10
+    p2 = "This CERTIFICATION is issued upon the request of above-named person for whatever legal purpose it may serve him/her."
+    y = draw_wrapped_text(pdf, p2, margin_left, y, content_w, font_name=font_regular)
+    y -= 10
+    p3 = (
+        f"ISSUED this {issued_day} day of {issued_month} in the year of Our Lord {issued_year_words} at {barangay_text}, "
+        f"{city_text}, {province_text}, Philippines."
+    )
+    y = draw_wrapped_text(pdf, p3, margin_left, y, content_w, font_name=font_regular)
+
+    sign_x = margin_left + (content_w * 0.68)
+    sign_y = max(100, y - 40)
+    pdf.setFont(font_regular, 11)
+    pdf.drawString(sign_x, sign_y, "REMEDIOS A. CUATON")
+    pdf.line(sign_x, sign_y - 2, sign_x + 135, sign_y - 2)
+    pdf.drawString(sign_x + 7, sign_y - 18, "PUROK CHAIRWOMAN")
+
+    pdf.showPage()
+    pdf.save()
+    pdf_bytes = pdf_buffer.getvalue()
+
+    if not request.user.is_staff:
+        with transaction.atomic():
+            locked = PurokClearance.objects.select_for_update().get(pk=clearance.pk)
+            if locked.resident_downloaded_at is not None:
+                messages.error(request, "This clearance can only be downloaded once.")
+                return redirect("clearance-list")
+            locked.resident_downloaded_at = timezone.now()
+            locked.save(update_fields=["resident_downloaded_at"])
+
+    response = HttpResponse(pdf_bytes, content_type="application/pdf")
+    response["Content-Disposition"] = f'attachment; filename="purok_clearance_{clearance.pk}.pdf"'
     return response
 
 
