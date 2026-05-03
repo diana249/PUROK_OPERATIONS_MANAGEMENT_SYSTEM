@@ -59,6 +59,29 @@
         gap: 8px;
         flex-wrap: wrap;
     }
+
+    @media (max-width: 600px) and (orientation: portrait) {
+        .residents-page .table-wrap {
+            overflow-x: auto;
+            overflow-y: hidden;
+            -webkit-overflow-scrolling: touch;
+        }
+        .residents-page .residents-table {
+            min-width: 1120px !important;
+        }
+        .residents-page .residents-table th {
+            white-space: nowrap;
+            word-break: keep-all;
+            overflow-wrap: normal;
+            font-size: 0.76rem;
+        }
+        .residents-page .residents-table td {
+            white-space: nowrap;
+            word-break: keep-all;
+            overflow-wrap: normal;
+            font-size: 0.82rem;
+        }
+    }
 </style>
 
 <section class="panel feature-fees residents-page">
@@ -138,3 +161,4 @@
     {% endif %}
 </section>
 {% endblock %}
+

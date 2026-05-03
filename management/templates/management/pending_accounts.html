@@ -132,6 +132,33 @@
         color: #fff;
     }
 
+    .accounts-tabs-toggle {
+        display: none;
+        border: 1px solid #aac5b8;
+        background: #dbe6dd;
+        color: #1d4b5f;
+        border-radius: 10px;
+        width: 40px;
+        height: 40px;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 5px 14px rgba(22, 55, 67, 0.07);
+    }
+
+    .accounts-tabs-toggle-lines {
+        display: inline-grid;
+        gap: 4px;
+    }
+
+    .accounts-tabs-toggle-lines span {
+        width: 16px;
+        height: 2px;
+        border-radius: 999px;
+        background: currentColor;
+        display: block;
+    }
+
     @media (max-width: 900px) {
         .accounts-page {
             padding: 18px 14px;
@@ -157,6 +184,71 @@
             padding: 14px 12px;
         }
     }
+
+    @media (max-width: 600px) and (orientation: portrait) {
+        .accounts-page .table-wrap {
+            overflow-x: auto;
+            overflow-y: hidden;
+            -webkit-overflow-scrolling: touch;
+        }
+        .accounts-page .accounts-table {
+            min-width: 920px !important;
+        }
+        .accounts-page .accounts-table th {
+            white-space: nowrap;
+            word-break: keep-all;
+            overflow-wrap: normal;
+            font-size: 0.76rem;
+        }
+        .accounts-page .accounts-table td {
+            white-space: nowrap;
+            word-break: keep-all;
+            overflow-wrap: normal;
+            font-size: 0.82rem;
+        }
+
+        
+        .accounts-page {
+            position: relative;
+        }
+        .accounts-page .section-head {
+            padding-right: 56px;
+        }
+        .accounts-tabs-menu {
+            position: absolute;
+            top: 20px;
+            right: 14px;
+            z-index: 35;
+        }
+        .accounts-tabs-toggle {
+            display: inline-flex;
+        }
+        .accounts-page .feature-tabs {
+            display: none;
+            margin: 0;
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            width: min(280px, calc(100vw - 24px));
+            border: 1px solid #b7cfc0;
+            border-radius: 14px;
+            background: #d5dfd7;
+            padding: 10px;
+            box-shadow: 0 10px 24px rgba(20, 48, 60, 0.14);
+            flex-direction: column;
+            gap: 8px;
+        }
+        .accounts-tabs-menu.open .feature-tabs {
+            display: flex;
+        }
+        .accounts-page .feature-tabs .btn {
+            width: 100%;
+            justify-content: flex-start;
+            min-height: 42px;
+            padding: 0 12px;
+            font-size: 0.82rem;
+        }
+    }
 </style>
 
 <section class="panel feature-fees accounts-page">
@@ -167,11 +259,23 @@
         </div>
     </div>
 
-    <div class="feature-tabs">
-        <a class="btn {% if accounts_tab == 'pending' %}btn-primary{% else %}btn-secondary{% endif %}" href="{% url 'pending-accounts' %}?tab=pending">Pending Accounts</a>
-        <a class="btn {% if accounts_tab == 'approved' %}btn-primary{% else %}btn-secondary{% endif %}" href="{% url 'pending-accounts' %}?tab=approved">Approved Accounts</a>
-        <a class="btn {% if accounts_tab == 'requests' %}btn-primary{% else %}btn-secondary{% endif %}" href="{% url 'pending-accounts' %}?tab=requests">Login Code Requests</a>
-        <a class="btn {% if accounts_tab == 'recent' %}btn-primary{% else %}btn-secondary{% endif %}" href="{% url 'pending-accounts' %}?tab=recent">Recently Log In Activity</a>
+    <div class="accounts-tabs-menu" id="accounts-tabs-menu">
+        <button
+            type="button"
+            class="accounts-tabs-toggle"
+            id="accounts-tabs-toggle"
+            aria-label="Toggle accounts menu"
+            aria-expanded="false"
+            aria-controls="accounts-feature-tabs"
+        >
+            <span class="accounts-tabs-toggle-lines" aria-hidden="true"><span></span><span></span><span></span></span>
+        </button>
+        <div class="feature-tabs" id="accounts-feature-tabs">
+            <a class="btn {% if accounts_tab == 'pending' %}btn-primary{% else %}btn-secondary{% endif %}" href="{% url 'pending-accounts' %}?tab=pending">Pending Accounts</a>
+            <a class="btn {% if accounts_tab == 'approved' %}btn-primary{% else %}btn-secondary{% endif %}" href="{% url 'pending-accounts' %}?tab=approved">Approved Accounts</a>
+            <a class="btn {% if accounts_tab == 'requests' %}btn-primary{% else %}btn-secondary{% endif %}" href="{% url 'pending-accounts' %}?tab=requests">Login Code Requests</a>
+            <a class="btn {% if accounts_tab == 'recent' %}btn-primary{% else %}btn-secondary{% endif %}" href="{% url 'pending-accounts' %}?tab=recent">Recently Log In Activity</a>
+        </div>
     </div>
 
     {% if accounts_tab == 'pending' %}
@@ -290,4 +394,38 @@
     </article>
     {% endif %}
 </section>
+<script>
+    (function () {
+        const menu = document.getElementById("accounts-tabs-menu");
+        const toggle = document.getElementById("accounts-tabs-toggle");
+        if (!menu || !toggle) return;
+
+        const closeMenu = () => {
+            menu.classList.remove("open");
+            toggle.setAttribute("aria-expanded", "false");
+        };
+
+        toggle.addEventListener("click", () => {
+            const isOpen = menu.classList.toggle("open");
+            toggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+        });
+
+        menu.querySelectorAll(".feature-tabs .btn").forEach((link) => {
+            link.addEventListener("click", closeMenu);
+        });
+
+        document.addEventListener("click", (event) => {
+            if (!menu.contains(event.target)) {
+                closeMenu();
+            }
+        });
+
+        window.addEventListener("resize", () => {
+            if (window.innerWidth > 600) {
+                closeMenu();
+            }
+        });
+    })();
+</script>
 {% endblock %}
+

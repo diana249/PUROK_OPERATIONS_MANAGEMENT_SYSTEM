@@ -993,6 +993,79 @@
                 flex: 1 1 100%;
                 width: 100%;
             }
+
+            .table-wrap table.mobile-card-table {
+                width: 100% !important;
+                min-width: 100% !important;
+                border-spacing: 0 !important;
+            }
+            .table-wrap table.mobile-card-table thead {
+                display: none !important;
+            }
+            .table-wrap table.mobile-card-table tbody {
+                display: grid;
+                gap: 10px;
+            }
+            .table-wrap table.mobile-card-table tbody tr {
+                display: grid;
+                gap: 6px;
+                padding: 10px;
+                border: 1px solid var(--line);
+                border-radius: 14px;
+                background: var(--panel-soft);
+            }
+            .table-wrap table.mobile-card-table tbody td {
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                gap: 10px;
+                padding: 0 !important;
+                border: 0 !important;
+                border-bottom: 1px solid #b8ccc2 !important;
+                background: transparent !important;
+                white-space: normal !important;
+                word-break: normal !important;
+                overflow-wrap: break-word !important;
+                font-size: 0.84rem !important;
+            }
+            .table-wrap table.mobile-card-table tbody td:last-child {
+                border-bottom: 0 !important;
+                padding-bottom: 0 !important;
+            }
+            .table-wrap table.mobile-card-table tbody td::before {
+                content: attr(data-label);
+                font-size: 0.72rem;
+                font-weight: 800;
+                letter-spacing: 0.35px;
+                text-transform: uppercase;
+                color: #2f5967;
+                flex: 0 0 42%;
+                max-width: 42%;
+            }
+            .table-wrap table.mobile-card-table tbody td > * {
+                margin-left: auto;
+                max-width: 58%;
+                text-align: right;
+            }
+            .table-wrap table.mobile-card-table tbody td[colspan] {
+                display: block;
+                padding: 4px 0 !important;
+                text-align: left;
+                font-weight: 700;
+            }
+            .table-wrap table.mobile-card-table tbody td[colspan]::before {
+                content: none;
+            }
+            .table-wrap table.mobile-card-table tbody tr td:first-child,
+            .table-wrap table.mobile-card-table tbody tr td:last-child {
+                border-radius: 0 !important;
+            }
+            .table-wrap table.mobile-card-table tbody td .btn {
+                min-height: 32px;
+                padding: 4px 10px;
+                font-size: 0.78rem;
+                white-space: nowrap;
+            }
         }
     </style>
 </head>
@@ -1171,6 +1244,30 @@
                 }
             });
         }
+
+        function applyMobileCardTables() {
+            const isMobilePortrait = window.matchMedia("(max-width: 600px) and (orientation: portrait)").matches;
+            document.querySelectorAll(".table-wrap table").forEach((table) => {
+                const headers = Array.from(table.querySelectorAll("thead tr:first-child th")).map((th) => {
+                    return (th.textContent || "").trim().replace(/\s+/g, " ");
+                });
+
+                table.querySelectorAll("tbody tr").forEach((row) => {
+                    const cells = Array.from(row.querySelectorAll("td"));
+                    cells.forEach((cell, index) => {
+                        if (cell.hasAttribute("colspan")) return;
+                        const label = headers[index] || ("Field " + (index + 1));
+                        cell.setAttribute("data-label", label);
+                    });
+                });
+
+                table.classList.toggle("mobile-card-table", isMobilePortrait);
+            });
+        }
+
+        applyMobileCardTables();
+        window.addEventListener("resize", applyMobileCardTables);
+        window.addEventListener("orientationchange", applyMobileCardTables);
     })();
 </script>
 </body>

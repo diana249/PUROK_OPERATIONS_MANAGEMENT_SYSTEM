@@ -150,6 +150,33 @@
         color: #f7fffa;
     }
 
+    .audit-filters-toggle {
+        display: none;
+        border: 1px solid #aac5b8;
+        background: #dbe6dd;
+        color: #1d4b5f;
+        border-radius: 10px;
+        width: 40px;
+        height: 40px;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 5px 14px rgba(22, 55, 67, 0.07);
+    }
+
+    .audit-filters-toggle-lines {
+        display: inline-grid;
+        gap: 4px;
+    }
+
+    .audit-filters-toggle-lines span {
+        width: 16px;
+        height: 2px;
+        border-radius: 999px;
+        background: currentColor;
+        display: block;
+    }
+
     @media (max-width: 900px) {
         .info-page {
             padding: 18px 14px;
@@ -166,6 +193,71 @@
 
         .info-page .search-form .btn {
             width: 100%;
+        }
+    }
+
+    @media (max-width: 600px) and (orientation: portrait) {
+        .info-page {
+            position: relative;
+        }
+        .info-page .section-head {
+            padding-right: 56px;
+        }
+        .audit-filters-menu {
+            position: absolute;
+            top: 20px;
+            right: 14px;
+            z-index: 35;
+        }
+        .audit-filters-toggle {
+            display: inline-flex;
+        }
+        .info-page .action-filters {
+            display: none;
+            margin: 0;
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            width: min(280px, calc(100vw - 24px));
+            border: 1px solid #b7cfc0;
+            border-radius: 14px;
+            background: #d5dfd7;
+            padding: 10px;
+            box-shadow: 0 10px 24px rgba(20, 48, 60, 0.14);
+            flex-direction: column;
+            gap: 8px;
+            align-items: stretch;
+        }
+        .audit-filters-menu.open .action-filters {
+            display: flex;
+        }
+        .info-page .action-filters .label {
+            margin-bottom: 2px;
+        }
+        .info-page .action-chip {
+            width: 100%;
+            justify-content: flex-start;
+            min-height: 40px;
+        }
+        .info-page .table-wrap {
+            overflow-x: auto;
+            overflow-y: hidden;
+            -webkit-overflow-scrolling: touch;
+        }
+        .info-page .info-table {
+            min-width: 760px !important;
+        }
+        .info-page .info-table th {
+            white-space: nowrap;
+            word-break: keep-all;
+            overflow-wrap: normal;
+            font-size: 0.76rem;
+        }
+        .info-page .info-table td {
+            white-space: nowrap;
+            word-break: keep-all;
+            overflow-wrap: normal;
+            font-size: 0.82rem;
         }
     }
 </style>
@@ -190,11 +282,23 @@
             <button class="btn btn-primary" type="submit">Search</button>
             <a class="btn btn-secondary" href="{% url 'audit-logs' %}">Clear</a>
         </form>
-        <div class="action-filters">
-            <span class="label">Actions:</span>
-            {% for action_item in action_filters %}
-            <a class="action-chip{% if action_item.active %} active{% endif %}" href="{{ action_item.url }}">{{ action_item.label }}</a>
-            {% endfor %}
+        <div class="audit-filters-menu" id="audit-filters-menu">
+            <button
+                type="button"
+                class="audit-filters-toggle"
+                id="audit-filters-toggle"
+                aria-label="Toggle audit filters"
+                aria-expanded="false"
+                aria-controls="audit-action-filters"
+            >
+                <span class="audit-filters-toggle-lines" aria-hidden="true"><span></span><span></span><span></span></span>
+            </button>
+            <div class="action-filters" id="audit-action-filters">
+                <span class="label">Actions:</span>
+                {% for action_item in action_filters %}
+                <a class="action-chip{% if action_item.active %} active{% endif %}" href="{{ action_item.url }}">{{ action_item.label }}</a>
+                {% endfor %}
+            </div>
         </div>
     </div>
 
@@ -239,4 +343,37 @@
     </div>
     {% endif %}
 </section>
+<script>
+    (function () {
+        const menu = document.getElementById("audit-filters-menu");
+        const toggle = document.getElementById("audit-filters-toggle");
+        if (!menu || !toggle) return;
+
+        const closeMenu = () => {
+            menu.classList.remove("open");
+            toggle.setAttribute("aria-expanded", "false");
+        };
+
+        toggle.addEventListener("click", () => {
+            const isOpen = menu.classList.toggle("open");
+            toggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+        });
+
+        menu.querySelectorAll(".action-chip").forEach((link) => {
+            link.addEventListener("click", closeMenu);
+        });
+
+        document.addEventListener("click", (event) => {
+            if (!menu.contains(event.target)) {
+                closeMenu();
+            }
+        });
+
+        window.addEventListener("resize", () => {
+            if (window.innerWidth > 600) {
+                closeMenu();
+            }
+        });
+    })();
+</script>
 {% endblock %}

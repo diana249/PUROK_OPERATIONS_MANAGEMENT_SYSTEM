@@ -126,6 +126,76 @@
         color: #2f5565;
         font-weight: 700;
     }
+
+    .pending-tabs-toggle {
+        display: none;
+        border: 1px solid #aac5b8;
+        background: #dbe6dd;
+        color: #1d4b5f;
+        border-radius: 10px;
+        width: 40px;
+        height: 40px;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        box-shadow: 0 5px 14px rgba(22, 55, 67, 0.07);
+    }
+
+    .pending-tabs-toggle-lines {
+        display: inline-grid;
+        gap: 4px;
+    }
+
+    .pending-tabs-toggle-lines span {
+        width: 16px;
+        height: 2px;
+        border-radius: 999px;
+        background: currentColor;
+        display: block;
+    }
+
+    @media (max-width: 600px) and (orientation: portrait) {
+        .pending-shell {
+            position: relative;
+        }
+        .pending-shell > .section-head {
+            padding-right: 56px;
+        }
+        .pending-tabs-menu {
+            position: absolute;
+            top: 20px;
+            right: 14px;
+            z-index: 35;
+        }
+        .pending-tabs-toggle {
+            display: inline-flex;
+        }
+        .pending-tabs {
+            display: none;
+            margin: 0;
+            position: absolute;
+            top: calc(100% + 8px);
+            right: 0;
+            width: min(280px, calc(100vw - 24px));
+            border: 1px solid #b7cfc0;
+            border-radius: 14px;
+            background: #d5dfd7;
+            padding: 10px;
+            box-shadow: 0 10px 24px rgba(20, 48, 60, 0.14);
+            flex-direction: column;
+            gap: 8px;
+        }
+        .pending-tabs-menu.open .pending-tabs {
+            display: flex;
+        }
+        .pending-tabs .btn {
+            width: 100%;
+            justify-content: flex-start;
+            min-height: 42px;
+            padding: 0 12px;
+            font-size: 0.82rem;
+        }
+    }
 </style>
 <section class="panel pending-shell">
     <div class="section-head">
@@ -135,11 +205,23 @@
         </div>
     </div>
 
-    <div class="pending-tabs" id="pending-task-filters">
-        <button type="button" class="btn btn-secondary active" data-filter="all">All Tasks</button>
-        <button type="button" class="btn btn-secondary" data-filter="high">High Priority</button>
-        <button type="button" class="btn btn-secondary" data-filter="medium">Medium Priority</button>
-        <button type="button" class="btn btn-secondary" data-filter="low">Low Priority</button>
+    <div class="pending-tabs-menu" id="pending-tabs-menu">
+        <button
+            type="button"
+            class="pending-tabs-toggle"
+            id="pending-tabs-toggle"
+            aria-label="Toggle pending tasks menu"
+            aria-expanded="false"
+            aria-controls="pending-task-filters"
+        >
+            <span class="pending-tabs-toggle-lines" aria-hidden="true"><span></span><span></span><span></span></span>
+        </button>
+        <div class="pending-tabs" id="pending-task-filters">
+            <button type="button" class="btn btn-secondary active" data-filter="all">All Tasks</button>
+            <button type="button" class="btn btn-secondary" data-filter="high">High Priority</button>
+            <button type="button" class="btn btn-secondary" data-filter="medium">Medium Priority</button>
+            <button type="button" class="btn btn-secondary" data-filter="low">Low Priority</button>
+        </div>
     </div>
 
     <article class="panel pending-card">
@@ -190,6 +272,8 @@
 <script>
     (function () {
         const filterBar = document.getElementById("pending-task-filters");
+        const pendingTabsMenu = document.getElementById("pending-tabs-menu");
+        const pendingTabsToggle = document.getElementById("pending-tabs-toggle");
         const meta = document.getElementById("tasks-meta");
         if (!filterBar) return;
 
@@ -220,8 +304,33 @@
                 buttons.forEach((b) => b.classList.remove("active"));
                 button.classList.add("active");
                 applyFilter(button.dataset.filter || "all");
+                if (pendingTabsMenu && pendingTabsToggle) {
+                    pendingTabsMenu.classList.remove("open");
+                    pendingTabsToggle.setAttribute("aria-expanded", "false");
+                }
             });
         });
+
+        if (pendingTabsMenu && pendingTabsToggle) {
+            pendingTabsToggle.addEventListener("click", () => {
+                const isOpen = pendingTabsMenu.classList.toggle("open");
+                pendingTabsToggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+            });
+
+            document.addEventListener("click", (event) => {
+                if (!pendingTabsMenu.contains(event.target)) {
+                    pendingTabsMenu.classList.remove("open");
+                    pendingTabsToggle.setAttribute("aria-expanded", "false");
+                }
+            });
+
+            window.addEventListener("resize", () => {
+                if (window.innerWidth > 600) {
+                    pendingTabsMenu.classList.remove("open");
+                    pendingTabsToggle.setAttribute("aria-expanded", "false");
+                }
+            });
+        }
 
         applyFilter("all");
     })();
