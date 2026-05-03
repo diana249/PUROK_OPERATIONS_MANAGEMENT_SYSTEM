@@ -206,54 +206,63 @@ def verification_request_action(request, request_id):
     action = (request.POST.get("action") or "").strip().lower()
     req = get_object_or_404(VerificationCodeRequest, pk=request_id)
 
-    if action == "resolve":
-        with transaction.atomic():
-            req.status = "resolved"
-            req.save(update_fields=["status"])
-        messages.success(request, f"Verification request for '{req.email}' marked as resolved.")
-    elif action == "pending":
-        with transaction.atomic():
-            req.status = "pending"
-            req.save(update_fields=["status"])
-        messages.info(request, f"Verification request for '{req.email}' moved to pending.")
-    elif action == "generate_code":
-        if req.verification_code and req.verification_code.is_usable():
-            code = req.verification_code
-        else:
-            try:
-                code = create_unique_verification_code(max_uses=1, attempts=10)
-            except RuntimeError:
-                messages.error(request, "Could not generate a unique login code. Try again.")
-                return redirect("pending-accounts")
+    try:
+        if action == "resolve":
+            with transaction.atomic():
+                req.status = "resolved"
+                req.save(update_fields=["status"])
+            messages.success(request, f"Verification request for '{req.email}' marked as resolved.")
+        elif action == "pending":
+            with transaction.atomic():
+                req.status = "pending"
+                req.save(update_fields=["status"])
+            messages.info(request, f"Verification request for '{req.email}' moved to pending.")
+        elif action == "generate_code":
+            if req.verification_code and req.verification_code.is_usable():
+                code = req.verification_code
+            else:
+                try:
+                    code = create_unique_verification_code(max_uses=1, attempts=10)
+                except RuntimeError:
+                    messages.error(request, "Could not generate a unique login code. Try again.")
+                    return redirect("pending-accounts")
 
-        with transaction.atomic():
-            req.verification_code = code
-            req.status = "resolved"
-            req.save(update_fields=["verification_code", "status"])
-            write_audit_log(
-                "create_code",
-                f"Generated login code for '{req.email}'.",
-                actor=request.user,
-                target=req,
-                metadata={"verification_code": code.code, "request_id": req.pk},
+            with transaction.atomic():
+                req.verification_code = code
+                req.status = "resolved"
+                req.save(update_fields=["verification_code", "status"])
+                write_audit_log(
+                    "create_code",
+                    f"Generated login code for '{req.email}'.",
+                    actor=request.user,
+                    target=req,
+                    metadata={"verification_code": code.code, "request_id": req.pk},
+                )
+            email_sent = email_service.send_verification_code_email(
+                recipient=req.email,
+                name=req.name,
+                verification_code=code.code,
+                expires_at=code.expires_at,
             )
-        email_sent = email_service.send_verification_code_email(
-            recipient=req.email,
-            name=req.name,
-            verification_code=code.code,
-            expires_at=code.expires_at,
-        )
-        if email_sent:
-            messages.success(
-                request,
-                f"Login code for '{req.email}' was emailed successfully. Code: {code.code}",
-            )
+            if email_sent:
+                messages.success(
+                    request,
+                    f"Login code for '{req.email}' was emailed successfully. Code: {code.code}",
+                )
+            else:
+                messages.warning(
+                    request,
+                    f"Login code for '{req.email}' is {code.code}, but email could not be sent. Check SMTP settings.",
+                )
         else:
-            messages.warning(
-                request,
-                f"Login code for '{req.email}' is {code.code}, but email could not be sent. Check SMTP settings.",
-            )
-    else:
-        messages.error(request, "Invalid login code request action.")
+            messages.error(request, "Invalid login code request action.")
+    except Exception:
+        logger.exception(
+            "verification_request_action failed. request_id=%s action=%s email=%s",
+            request_id,
+            action,
+            req.email,
+        )
+        messages.error(request, "Something went wrong while processing the request. Please try again.")
 
     return redirect("pending-accounts")
