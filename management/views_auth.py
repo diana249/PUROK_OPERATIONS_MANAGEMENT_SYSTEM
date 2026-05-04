@@ -204,9 +204,9 @@ def pending_account_action(request, user_id):
 @require_POST
 def verification_request_action(request, request_id):
     action = (request.POST.get("action") or "").strip().lower()
-    req = get_object_or_404(VerificationCodeRequest, pk=request_id)
-
+    req = None
     try:
+        req = get_object_or_404(VerificationCodeRequest, pk=request_id)
         if action == "resolve":
             with transaction.atomic():
                 req.status = "resolved"
@@ -261,7 +261,7 @@ def verification_request_action(request, request_id):
             "verification_request_action failed. request_id=%s action=%s email=%s",
             request_id,
             action,
-            req.email,
+            getattr(req, "email", "<unknown>"),
         )
         messages.error(request, "Something went wrong while processing the request. Please try again.")
 

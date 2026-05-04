@@ -1,6 +1,7 @@
 from django.contrib import admin, messages
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from django.contrib.auth.models import User
+import logging
 from django.http import HttpResponseRedirect
 from django.urls import path, reverse
 from django.utils import timezone
@@ -25,6 +26,8 @@ from .models import (
     write_audit_log,
 )
 from .services import email_service, fee_service
+
+logger = logging.getLogger(__name__)
 
 
 class LoginActivityInline(admin.TabularInline):
@@ -108,25 +111,32 @@ class VerificationCodeRequestAdmin(admin.ModelAdmin):
         updated = 0
         emailed = 0
         for req in queryset:
-            code = self._get_or_create_code(req)
-            req.verification_code = code
-            req.status = "resolved"
-            req.save(update_fields=["verification_code", "status"])
-            write_audit_log(
-                "create_code",
-                f"Generated login code for '{req.email}' from admin action.",
-                actor=request.user,
-                target=req,
-                metadata={"verification_code": code.code, "channel": "admin"},
-            )
-            if email_service.send_verification_code_email(
-                recipient=req.email,
-                name=req.name,
-                verification_code=code.code,
-                expires_at=code.expires_at,
-            ):
-                emailed += 1
-            updated += 1
+            try:
+                code = self._get_or_create_code(req)
+                req.verification_code = code
+                req.status = "resolved"
+                req.save(update_fields=["verification_code", "status"])
+                write_audit_log(
+                    "create_code",
+                    f"Generated login code for '{req.email}' from admin action.",
+                    actor=request.user,
+                    target=req,
+                    metadata={"verification_code": code.code, "channel": "admin"},
+                )
+                if email_service.send_verification_code_email(
+                    recipient=req.email,
+                    name=req.name,
+                    verification_code=code.code,
+                    expires_at=code.expires_at,
+                ):
+                    emailed += 1
+                updated += 1
+            except Exception:
+                logger.exception(
+                    "Admin bulk generate_code failed. request_id=%s email=%s",
+                    req.pk,
+                    req.email,
+                )
         failed = updated - emailed
         if failed:
             self.message_user(
@@ -143,30 +153,42 @@ class VerificationCodeRequestAdmin(admin.ModelAdmin):
             self.message_user(request, "Request not found.", level=messages.ERROR)
             return HttpResponseRedirect(reverse("admin:management_verificationcoderequest_changelist"))
 
-        code = self._get_or_create_code(req)
-        req.verification_code = code
-        req.status = "resolved"
-        req.save(update_fields=["verification_code", "status"])
-        write_audit_log(
-            "create_code",
-            f"Generated login code for '{req.email}' from admin button.",
-            actor=request.user,
-            target=req,
-            metadata={"verification_code": code.code, "channel": "admin"},
-        )
-        email_sent = email_service.send_verification_code_email(
-            recipient=req.email,
-            name=req.name,
-            verification_code=code.code,
-            expires_at=code.expires_at,
-        )
-        if email_sent:
-            self.message_user(request, f"Code for {req.email} generated and emailed successfully.")
-        else:
+        try:
+            code = self._get_or_create_code(req)
+            req.verification_code = code
+            req.status = "resolved"
+            req.save(update_fields=["verification_code", "status"])
+            write_audit_log(
+                "create_code",
+                f"Generated login code for '{req.email}' from admin button.",
+                actor=request.user,
+                target=req,
+                metadata={"verification_code": code.code, "channel": "admin"},
+            )
+            email_sent = email_service.send_verification_code_email(
+                recipient=req.email,
+                name=req.name,
+                verification_code=code.code,
+                expires_at=code.expires_at,
+            )
+            if email_sent:
+                self.message_user(request, f"Code for {req.email} generated and emailed successfully.")
+            else:
+                self.message_user(
+                    request,
+                    f"Code for {req.email}: {code.code}. Email failed to send.",
+                    level=messages.WARNING,
+                )
+        except Exception:
+            logger.exception(
+                "Admin generate_code_view failed. request_id=%s email=%s",
+                req.pk,
+                req.email,
+            )
             self.message_user(
                 request,
-                f"Code for {req.email}: {code.code}. Email failed to send.",
-                level=messages.WARNING,
+                "Failed to generate/send code due to a server error. Check application logs.",
+                level=messages.ERROR,
             )
         return HttpResponseRedirect(reverse("admin:management_verificationcoderequest_changelist"))
 
